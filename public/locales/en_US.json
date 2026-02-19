@@ -1,0 +1,14 @@
+{
+    "version": "version 1.0",
+    "sku": "SKU",
+    "location": "Location",
+    "allLocations": "All locations",
+    "clearFilters": "Clear filters",
+    "inStock": "In Stock",
+    "critical": "Critical",
+    "outOfStock": "Out of Stock",
+    "partsAndMaterials": "Parts & Materials",
+    "movementHistory": "Movement History",
+    "stockLevel": "Stock Level",
+    "searchBySku": "Search by SKU or name..."
+}
