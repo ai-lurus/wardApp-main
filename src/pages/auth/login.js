@@ -1,6 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
-import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -8,21 +7,22 @@ import {
   Alert,
   Box,
   Button,
-  FormHelperText,
-  Link,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   Typography
 } from '@mui/material';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { useAuth } from 'src/hooks/use-auth';
 import { Layout as AuthLayout } from 'src/layouts/auth/layout';
 
 const Page = () => {
   const router = useRouter();
   const auth = useAuth();
-  const [method, setMethod] = useState('email');
+  const [showPassword, setShowPassword] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       email: 'admin@demo.com',
@@ -32,13 +32,13 @@ const Page = () => {
     validationSchema: Yup.object({
       email: Yup
         .string()
-        .email('Must be a valid email')
+        .email('Ingresa un correo válido')
         .max(255)
-        .required('Email is required'),
+        .required('El correo es obligatorio'),
       password: Yup
         .string()
         .max(255)
-        .required('Password is required')
+        .required('La contraseña es obligatoria')
     }),
     onSubmit: async (values, helpers) => {
       try {
@@ -53,19 +53,10 @@ const Page = () => {
     }
   });
 
-  const handleMethodChange = useCallback(
-    (event, value) => {
-      setMethod(value);
-    },
-    []
-  );
-
   return (
     <>
       <Head>
-        <title>
-          Login | Ward
-        </title>
+        <title>Iniciar sesión | Ward</title>
       </Head>
       <Box
         sx={{
@@ -78,125 +69,87 @@ const Page = () => {
       >
         <Box
           sx={{
-            maxWidth: 550,
+            maxWidth: 480,
             px: 3,
-            py: '100px',
+            py: { xs: 6, sm: 10 },
             width: '100%'
           }}
         >
-          <div>
-            <Stack
-              spacing={1}
-              sx={{ mb: 3 }}
-            >
-              <Typography variant="h4">
-                Login
-              </Typography>
-              <Typography
-                color="text.secondary"
-                variant="body2"
-              >
-                Don&apos;t have an account?
-                &nbsp;
-                <Link
-                  component={NextLink}
-                  href="/auth/register"
-                  underline="hover"
-                  variant="subtitle2"
-                >
-                  Register
-                </Link>
-              </Typography>
+          <Stack spacing={1} sx={{ mb: 3 }}>
+            <Typography variant="h4">
+              Iniciar sesión
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Ingresa con las credenciales de tu cuenta.
+            </Typography>
+          </Stack>
+
+          <form noValidate onSubmit={formik.handleSubmit}>
+            <Stack spacing={3}>
+              <TextField
+                error={!!(formik.touched.email && formik.errors.email)}
+                fullWidth
+                helperText={formik.touched.email && formik.errors.email}
+                label="Correo electrónico"
+                name="email"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                type="email"
+                value={formik.values.email}
+              />
+              <TextField
+                error={!!(formik.touched.password && formik.errors.password)}
+                fullWidth
+                helperText={formik.touched.password && formik.errors.password}
+                label="Contraseña"
+                name="password"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                type={showPassword ? 'text' : 'password'}
+                value={formik.values.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge="end"
+                        size="small"
+                        tabIndex={-1}
+                      >
+                        {showPassword
+                          ? <EyeSlashIcon style={{ width: 20, height: 20 }} />
+                          : <EyeIcon style={{ width: 20, height: 20 }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
             </Stack>
-            {/* <Tabs
-              onChange={handleMethodChange}
-              sx={{ mb: 3 }}
-              value={method}
+
+            {formik.errors.submit && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {formik.errors.submit}
+              </Alert>
+            )}
+
+            <Button
+              fullWidth
+              size="large"
+              sx={{ mt: 3 }}
+              type="submit"
+              variant="contained"
+              disabled={formik.isSubmitting}
+              startIcon={formik.isSubmitting
+                ? <CircularProgress size={18} color="inherit" />
+                : null}
             >
-              <Tab
-                label="Email"
-                value="email"
-              />
-              <Tab
-                label="Phone Number"
-                value="phoneNumber"
-              />
-            </Tabs> */}
-            {method === 'email' && (
-              <form
-                noValidate
-                onSubmit={formik.handleSubmit}
-              >
-                <Stack spacing={3}>
-                  <TextField
-                    error={!!(formik.touched.email && formik.errors.email)}
-                    fullWidth
-                    helperText={formik.touched.email && formik.errors.email}
-                    label="Email Address"
-                    name="email"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    type="email"
-                    value={formik.values.email}
-                  />
-                  <TextField
-                    error={!!(formik.touched.password && formik.errors.password)}
-                    fullWidth
-                    helperText={formik.touched.password && formik.errors.password}
-                    label="Password"
-                    name="password"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    type="password"
-                    value={formik.values.password}
-                  />
-                </Stack>
-                <FormHelperText sx={{ mt: 1 }}>
-                  Ingresa tus credenciales para continuar.
-                </FormHelperText>
-                {formik.errors.submit && (
-                  <Typography
-                    color="error"
-                    sx={{ mt: 3 }}
-                    variant="body2"
-                  >
-                    {formik.errors.submit}
-                  </Typography>
-                )}
-                <Button
-                  fullWidth
-                  size="large"
-                  sx={{ mt: 3 }}
-                  type="submit"
-                  variant="contained"
-                >
-                  Continue
-                </Button>
-                <Alert
-                  color="primary"
-                  severity="info"
-                  sx={{ mt: 3 }}
-                >
-                  <div>
-                    Demo: <b>admin@demo.com</b> / <b>demo123</b>
-                  </div>
-                </Alert>
-              </form>
-            )}
-            {method === 'phoneNumber' && (
-              <div>
-                <Typography
-                  sx={{ mb: 1 }}
-                  variant="h6"
-                >
-                  Not available in the demo
-                </Typography>
-                <Typography color="text.secondary">
-                  To prevent unnecessary costs we disabled this feature in the demo.
-                </Typography>
-              </div>
-            )}
-          </div>
+              {formik.isSubmitting ? 'Ingresando...' : 'Ingresar'}
+            </Button>
+
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Demo: <b>admin@demo.com</b> / <b>demo123</b>
+            </Alert>
+          </form>
         </Box>
       </Box>
     </>
