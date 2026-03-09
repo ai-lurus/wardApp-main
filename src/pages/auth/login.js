@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -10,6 +11,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  Link,
   Stack,
   TextField,
   Typography
@@ -145,6 +147,18 @@ const Page = () => {
             >
               {formik.isSubmitting ? 'Ingresando...' : 'Ingresar'}
             </Button>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+              <Link
+                component={NextLink}
+                href="/auth/forgot-password"
+                underline="hover"
+                variant="body2"
+                color="text.secondary"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </Box>
 
             <Alert severity="info" sx={{ mt: 2 }}>
               Demo: <b>admin@demo.com</b> / <b>demo123</b>

@@ -1,69 +1,54 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Divider,
-  Typography
-} from '@mui/material';
+import { Avatar, Box, Card, CardContent, Divider, Typography } from '@mui/material';
+import { useAuthContext } from 'src/contexts/auth-context';
 
-const user = {
-  avatar: '/assets/avatars/avatar-anika-visser.png',
-  city: 'Los Angeles',
-  country: 'USA',
-  jobTitle: 'Senior Developer',
-  name: 'Demo',
-  timezone: 'GTM-7'
+const roleLabel = {
+  super_admin: 'Super Admin',
+  admin: 'Administrador',
+  almacenista: 'Almacenista',
+  operator: 'Operador',
 };
 
-export const AccountProfile = () => (
-  <Card>
-    <CardContent>
-      <Box
-        sx={{
-          alignItems: 'center',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <Avatar
-          src={user.avatar}
-          sx={{
-            height: 80,
-            mb: 2,
-            width: 80
-          }}
-        />
-        <Typography
-          gutterBottom
-          variant="h5"
-        >
-          {user.name}
-        </Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          {user.city} {user.country}
-        </Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          {user.timezone}
+function getInitials(name = '') {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export const AccountProfile = () => {
+  const { user } = useAuthContext();
+
+  return (
+    <Card>
+      <CardContent>
+        <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+          <Avatar
+            sx={{
+              height: 80,
+              mb: 2,
+              width: 80,
+              bgcolor: 'primary.main',
+              fontSize: 28,
+            }}
+          >
+            {getInitials(user?.name)}
+          </Avatar>
+          <Typography gutterBottom variant="h5">
+            {user?.name}
+          </Typography>
+          <Typography color="text.secondary" variant="body2">
+            {user?.email}
+          </Typography>
+        </Box>
+      </CardContent>
+      <Divider />
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Typography variant="body2" color="text.secondary" align="center">
+          {roleLabel[user?.role] ?? user?.role}
         </Typography>
       </Box>
-    </CardContent>
-    <Divider />
-    <CardActions>
-      <Button
-        fullWidth
-        variant="text"
-      >
-        Upload picture
-      </Button>
-    </CardActions>
-  </Card>
-);
+    </Card>
+  );
+};

@@ -12,6 +12,24 @@ import UsersIcon from '@heroicons/react/24/solid/UsersIcon';
 import WrenchIcon from '@heroicons/react/24/solid/WrenchIcon';
 import { SvgIcon } from '@mui/material';
 
+import BuildingOfficeIcon from '@heroicons/react/24/solid/BuildingOfficeIcon';
+
+export const superAdminItems = [
+  {
+    title: 'Tenants',
+    path: '/tenants',
+    icon: (
+      <SvgIcon fontSize="small">
+        <BuildingOfficeIcon />
+      </SvgIcon>
+    ),
+  },
+];
+
+// allowedRoles: if set, only users with those roles can see the item.
+// If omitted, the item is visible to all authenticated (non-super_admin) roles.
+// adminOnly is kept as a shorthand for allowedRoles: ['admin'].
+
 export const items = [
   {
     title: 'Inicio',
@@ -42,6 +60,7 @@ export const items = [
       {
         title: 'Categorías',
         path: '/categories',
+        allowedRoles: ['admin'],
         icon: (
           <SvgIcon fontSize="small">
             <TagIcon />
@@ -69,6 +88,7 @@ export const items = [
       {
         title: 'Reportes',
         path: '/reports',
+        allowedRoles: ['admin'],
         icon: (
           <SvgIcon fontSize="small">
             <DocumentChartBarIcon />
@@ -78,6 +98,7 @@ export const items = [
       {
         title: 'Mapa de almacén',
         path: '/warehouse',
+        allowedRoles: ['admin'],
         icon: (
           <SvgIcon fontSize="small">
             <MapIcon />
@@ -86,11 +107,12 @@ export const items = [
       },
     ],
   },
-  // --- Coming-soon modules ---
+  // --- Coming-soon modules (admin only) ---
   {
     title: 'Operaciones',
     comingSoon: true,
-    sectionDivider: true, // renders a divider before this item
+    allowedRoles: ['admin'],
+    sectionDivider: true,
     icon: (
       <SvgIcon fontSize="small">
         <TruckIcon />
@@ -100,6 +122,7 @@ export const items = [
   {
     title: 'Flotas',
     comingSoon: true,
+    allowedRoles: ['admin'],
     icon: (
       <SvgIcon fontSize="small">
         <WrenchIcon />
@@ -109,6 +132,7 @@ export const items = [
   {
     title: 'Clientes',
     comingSoon: true,
+    allowedRoles: ['admin'],
     icon: (
       <SvgIcon fontSize="small">
         <UserGroupIcon />
@@ -118,6 +142,7 @@ export const items = [
   {
     title: 'Finanzas',
     comingSoon: true,
+    allowedRoles: ['admin'],
     icon: (
       <SvgIcon fontSize="small">
         <BanknotesIcon />
@@ -128,6 +153,7 @@ export const items = [
   {
     title: 'Administración',
     adminOnly: true,
+    allowedRoles: ['admin'],
     icon: (
       <SvgIcon fontSize="small">
         <UsersIcon />
@@ -138,6 +164,7 @@ export const items = [
         title: 'Usuarios',
         path: '/users',
         adminOnly: true,
+        allowedRoles: ['admin'],
         icon: (
           <SvgIcon fontSize="small">
             <UsersIcon />

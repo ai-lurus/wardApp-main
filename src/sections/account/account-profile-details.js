@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -8,169 +9,93 @@ import {
   CardHeader,
   Divider,
   TextField,
-  Unstable_Grid2 as Grid
 } from '@mui/material';
-
-const states = [
-  {
-    value: 'alabama',
-    label: 'Alabama'
-  },
-  {
-    value: 'new-york',
-    label: 'New York'
-  },
-  {
-    value: 'san-francisco',
-    label: 'San Francisco'
-  },
-  {
-    value: 'los-angeles',
-    label: 'Los Angeles'
-  }
-];
+import { authApi } from 'src/services/apiService';
 
 export const AccountProfileDetails = () => {
   const [values, setValues] = useState({
-    firstName: 'Demo',
-    lastName: '',
-    email: 'demo@ward.io',
-    phone: '',
-    state: 'los-angeles',
-    country: 'USA'
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = useCallback(
-    (event) => {
-      setValues((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value
-      }));
-    },
-    []
-  );
+  const handleChange = (e) => {
+    setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
+    setSuccess(false);
+  };
 
-  const handleSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
-    },
-    []
-  );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (values.newPassword !== values.confirmPassword) {
+      setError('Las contraseñas nuevas no coinciden');
+      return;
+    }
+    if (values.newPassword.length < 6) {
+      setError('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authApi.changePassword(values.currentPassword, values.newPassword);
+      setSuccess(true);
+      setValues({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Error al cambiar la contraseña');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form
-      autoComplete="off"
-      noValidate
-      onSubmit={handleSubmit}
-    >
+    <form autoComplete="off" noValidate onSubmit={handleSubmit}>
       <Card>
         <CardHeader
-          subheader="The information can be edited"
-          title="Profile"
+          title="Cambiar contraseña"
+          subheader="Ingresa tu contraseña actual y la nueva"
         />
         <CardContent sx={{ pt: 0 }}>
-          <Box sx={{ m: -1.5 }}>
-            <Grid
-              container
-              spacing={3}
-            >
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  helperText="Please specify the first name"
-                  label="First name"
-                  name="firstName"
-                  onChange={handleChange}
-                  required
-                  value={values.firstName}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Last name"
-                  name="lastName"
-                  onChange={handleChange}
-                  required
-                  value={values.lastName}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  onChange={handleChange}
-                  required
-                  value={values.email}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  onChange={handleChange}
-                  type="number"
-                  value={values.phone}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  onChange={handleChange}
-                  required
-                  value={values.country}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-                <TextField
-                  fullWidth
-                  label="Select State"
-                  name="state"
-                  onChange={handleChange}
-                  required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
-                >
-                  {states.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField>
-              </Grid>
-            </Grid>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {success && (
+              <Alert severity="success">Contraseña actualizada correctamente</Alert>
+            )}
+            {error && <Alert severity="error">{error}</Alert>}
+            <TextField
+              fullWidth
+              label="Contraseña actual"
+              name="currentPassword"
+              type="password"
+              value={values.currentPassword}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Nueva contraseña"
+              name="newPassword"
+              type="password"
+              value={values.newPassword}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Confirmar nueva contraseña"
+              name="confirmPassword"
+              type="password"
+              value={values.confirmPassword}
+              onChange={handleChange}
+              required
+            />
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
-            Save details
+          <Button variant="contained" type="submit" disabled={loading}>
+            {loading ? 'Guardando...' : 'Cambiar contraseña'}
           </Button>
         </CardActions>
       </Card>

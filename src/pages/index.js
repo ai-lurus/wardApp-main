@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import ArchiveBoxIcon from '@heroicons/react/24/solid/ArchiveBoxIcon';
@@ -64,7 +65,14 @@ const KpiCard = ({ title, value, icon, color }) => (
 
 const Page = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role === 'super_admin') {
+      router.replace('/tenants');
+    }
+  }, [user, router]);
   const [stats, setStats] = useState({ totalMaterials: 0, lowStockCount: 0, totalInventoryValue: 0, recentMovementsCount: 0 });
   const [alertCount, setAlertCount] = useState(0);
 

@@ -32,7 +32,7 @@ import {
 import NextLinkComp from 'next/link';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
-import { items } from './config';
+import { items, superAdminItems } from './config';
 import { SideNavItem } from './side-nav-item';
 import { useAuth } from 'src/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
@@ -83,11 +83,34 @@ export const SideNav = (props) => {
     router.push('/auth/login');
   }, [auth, router]);
 
+  const isSuperAdmin = auth.user?.role === 'super_admin';
+  const userRole = auth.user?.role;
+
+  const isAllowed = (item) => {
+    if (item.allowedRoles) return item.allowedRoles.includes(userRole);
+    if (item.adminOnly) return userRole === 'admin';
+    return true;
+  };
+
   // Renders the full navigation list
   const renderNavItems = () => {
-    const visibleItems = items.filter(
-      (item) => !item.adminOnly || auth.user?.role === 'admin'
-    );
+    if (isSuperAdmin) {
+      return superAdminItems.map((item) => {
+        const active = pathname === item.path;
+        return (
+          <SideNavItem
+            key={item.title}
+            active={active}
+            collapsed={collapsed}
+            icon={item.icon}
+            path={item.path}
+            title={item.title}
+          />
+        );
+      });
+    }
+
+    const visibleItems = items.filter(isAllowed);
 
     return visibleItems.flatMap((item) => {
       // ── Section divider (e.g. before coming-soon modules) ──
@@ -188,9 +211,7 @@ export const SideNav = (props) => {
 
       // ── Group item with children ──
       if (item.children) {
-        const visibleChildren = item.children.filter(
-          (child) => !child.adminOnly || auth.user?.role === 'admin'
-        );
+        const visibleChildren = item.children.filter(isAllowed);
 
         // Collapsed: show children as individual icons
         if (collapsed) {
@@ -365,39 +386,42 @@ export const SideNav = (props) => {
 
         <Divider sx={{ borderColor: 'neutral.700' }} />
 
-        {/* Notifications row */}
-        <Box sx={{ px: collapsed ? 1 : 2, py: 1.5 }}>
-          <Tooltip title={collapsed ? `Notificaciones${alerts.length ? ` (${alerts.length})` : ''}` : ''} placement="right">
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={collapsed ? 0 : 1.5}
-              justifyContent={collapsed ? 'center' : 'flex-start'}
-              onClick={() => setNotifOpen(true)}
-              ref={bellRef}
-              sx={{
-                cursor: 'pointer',
-                borderRadius: 1,
-                px: collapsed ? 0 : 1,
-                py: 0.75,
-                '&:hover': { backgroundColor: 'rgba(255,255,255,0.04)' },
-              }}
-            >
-              <Badge badgeContent={alerts.length || 0} color="error" max={99}>
-                <SvgIcon fontSize="small" sx={{ color: alerts.length ? 'warning.light' : 'neutral.400' }}>
-                  <BellIcon />
-                </SvgIcon>
-              </Badge>
-              {!collapsed && (
-                <Typography variant="body2" sx={{ color: 'neutral.400', fontWeight: 600, fontSize: 14 }}>
-                  Notificaciones
-                </Typography>
-              )}
-            </Stack>
-          </Tooltip>
-        </Box>
-
-        <Divider sx={{ borderColor: 'neutral.700' }} />
+        {/* Notifications row — hidden for super_admin */}
+        {!isSuperAdmin && (
+          <>
+            <Box sx={{ px: collapsed ? 1 : 2, py: 1.5 }}>
+              <Tooltip title={collapsed ? `Notificaciones${alerts.length ? ` (${alerts.length})` : ''}` : ''} placement="right">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={collapsed ? 0 : 1.5}
+                  justifyContent={collapsed ? 'center' : 'flex-start'}
+                  onClick={() => setNotifOpen(true)}
+                  ref={bellRef}
+                  sx={{
+                    cursor: 'pointer',
+                    borderRadius: 1,
+                    px: collapsed ? 0 : 1,
+                    py: 0.75,
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.04)' },
+                  }}
+                >
+                  <Badge badgeContent={alerts.length || 0} color="error" max={99}>
+                    <SvgIcon fontSize="small" sx={{ color: alerts.length ? 'warning.light' : 'neutral.400' }}>
+                      <BellIcon />
+                    </SvgIcon>
+                  </Badge>
+                  {!collapsed && (
+                    <Typography variant="body2" sx={{ color: 'neutral.400', fontWeight: 600, fontSize: 14 }}>
+                      Notificaciones
+                    </Typography>
+                  )}
+                </Stack>
+              </Tooltip>
+            </Box>
+            <Divider sx={{ borderColor: 'neutral.700' }} />
+          </>
+        )}
 
         {/* User info + logout */}
         <Box sx={{ px: collapsed ? 1 : 2, py: 2 }}>
@@ -406,23 +430,37 @@ export const SideNav = (props) => {
             alignItems="center"
             spacing={collapsed ? 1 : 1.5}
           >
-            <Tooltip title={collapsed ? (auth.user?.name || 'Usuario') : ''} placement="right">
+            <Tooltip title={collapsed ? `${auth.user?.name || 'Usuario'} · Mi cuenta` : 'Mi cuenta'} placement="right">
               <Avatar
+                component={NextLink}
+                href="/account"
                 sx={{
                   width: 36,
                   height: 36,
                   bgcolor: 'primary.main',
                   fontSize: 13,
                   flexShrink: 0,
-                  cursor: 'default',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  '&:hover': { opacity: 0.85 },
                 }}
               >
                 {getInitials(auth.user?.name || 'U')}
               </Avatar>
             </Tooltip>
             {!collapsed && (
-              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                <Typography variant="subtitle2" color="common.white" noWrap>
+              <Box
+                component={NextLink}
+                href="/account"
+                sx={{
+                  minWidth: 0,
+                  flexGrow: 1,
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  '&:hover .user-name': { color: 'common.white', opacity: 0.85 },
+                }}
+              >
+                <Typography className="user-name" variant="subtitle2" color="common.white" noWrap>
                   {auth.user?.name || 'Usuario'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'neutral.400' }} noWrap display="block">

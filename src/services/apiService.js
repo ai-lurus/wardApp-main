@@ -121,6 +121,15 @@ export const authApi = {
 
   getMe: () =>
     api.get('/auth/me').then((r) => r.data),
+
+  changePassword: (currentPassword, newPassword) =>
+    api.patch('/auth/change-password', { currentPassword, newPassword }).then((r) => r.data),
+
+  forgotPassword: (email) =>
+    api.post('/auth/forgot-password', { email }).then((r) => r.data),
+
+  resetPassword: (token, newPassword) =>
+    api.post('/auth/reset-password', { token, newPassword }).then((r) => r.data),
 };
 
 // ─── Materials ─────────────────────────────────────────
@@ -296,6 +305,38 @@ export const warehouseApi = {
       config: normalizeConfig(r.data.config),
       zones: r.data.zones.map(normalizeZone),
     })),
+};
+
+// ─── Admin (super_admin only) ───────────────────────────
+
+const normalizeCompany = (c) => ({
+  id: c.id,
+  name: c.name,
+  slug: c.slug,
+  active: c.active,
+  createdAt: c.created_at,
+  userCount: c._count?.users ?? 0,
+  users: c.users?.map(normalizeUser) ?? undefined,
+});
+
+export const adminApi = {
+  listCompanies: () =>
+    api.get('/admin/companies').then((r) => r.data.map(normalizeCompany)),
+
+  getCompany: (id) =>
+    api.get(`/admin/companies/${id}`).then((r) => normalizeCompany(r.data)),
+
+  createCompany: (data) =>
+    api.post('/admin/companies', data).then((r) => r.data),
+
+  updateCompany: (id, data) =>
+    api.patch(`/admin/companies/${id}`, data).then((r) => normalizeCompany(r.data)),
+
+  listCompanyUsers: (companyId) =>
+    api.get(`/admin/companies/${companyId}/users`).then((r) => r.data.map(normalizeUser)),
+
+  createCompanyUser: (companyId, data) =>
+    api.post(`/admin/companies/${companyId}/users`, data).then((r) => normalizeUser(r.data)),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
