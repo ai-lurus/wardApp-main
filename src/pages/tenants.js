@@ -15,6 +15,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { TenantsTable } from 'src/sections/tenants/tenants-table';
 import { TenantFormModal } from 'src/sections/tenants/tenant-form-modal';
 import { TenantUsersModal } from 'src/sections/tenants/tenant-users-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { adminApi } from 'src/services/apiService';
 
 const Page = () => {
@@ -31,7 +32,7 @@ const Page = () => {
     setLoading(true);
     adminApi.listCompanies()
       .then(setCompanies)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -73,9 +74,7 @@ const Page = () => {
 
             <Card>
               {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                  <CircularProgress />
-                </Box>
+                <TableSkeleton rowCount={6} colCount={5} />
               ) : (
                 <TenantsTable
                   items={companies}

@@ -16,6 +16,7 @@ import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { MaterialsTable } from 'src/sections/inventory/materials-table';
 import { MaterialsSearch } from 'src/sections/inventory/materials-search';
 import { MaterialModal } from 'src/sections/inventory/material-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { materialsApi, categoriesApi, warehouseApi } from 'src/services/apiService';
 import { useTranslation } from 'react-i18next';
@@ -131,13 +132,7 @@ const Page = () => {
     setShowInactive(false);
   }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Remove full page blocking spinner
 
   return (
     <>
@@ -168,22 +163,26 @@ const Page = () => {
               onCategoryChange={setCategoryFilter}
               categories={categories}
               locationFilter=""
-              onLocationChange={() => {}}
+              onLocationChange={() => { }}
               locations={[]}
               onClearFilters={handleClearFilters}
               showInactive={showInactive}
               onShowInactiveChange={setShowInactive}
             />
-            <MaterialsTable
-              count={filteredMaterials.length}
-              items={paginatedMaterials}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onEdit={handleEdit}
-              onToggleActive={handleToggleActive}
-            />
+            {loading ? (
+              <TableSkeleton rowCount={10} colCount={7} />
+            ) : (
+              <MaterialsTable
+                count={filteredMaterials.length}
+                items={paginatedMaterials}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onEdit={handleEdit}
+                onToggleActive={handleToggleActive}
+              />
+            )}
           </Stack>
         </Container>
       </Box>

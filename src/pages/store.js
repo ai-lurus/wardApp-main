@@ -29,6 +29,7 @@ import {
   Unstable_Grid2 as Grid,
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { dashboardApi, inventoryApi } from 'src/services/apiService';
 import { useTranslation } from 'react-i18next';
 
@@ -83,13 +84,7 @@ const Page = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Remove full page blocking spinner
 
   return (
     <>
@@ -207,45 +202,49 @@ const Page = () => {
                     }
                   />
                   <Box sx={{ overflowX: 'auto' }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Material</TableCell>
-                          <TableCell>Tipo</TableCell>
-                          <TableCell>Cantidad</TableCell>
-                          <TableCell>Usuario</TableCell>
-                          <TableCell>Fecha</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {recentMovements.map((mov) => (
-                          <TableRow key={mov.id} hover>
-                            <TableCell>{mov.materialName}</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={mov.type === 'entry' ? t('entry') : t('exit')}
-                                color={mov.type === 'entry' ? 'success' : 'warning'}
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell>{mov.quantity}</TableCell>
-                            <TableCell>{mov.createdBy}</TableCell>
-                            <TableCell>
-                              {new Date(mov.movementDate).toLocaleDateString('es-MX')}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {recentMovements.length === 0 && (
+                    {loading ? (
+                      <TableSkeleton rowCount={5} colCount={5} />
+                    ) : (
+                      <Table>
+                        <TableHead>
                           <TableRow>
-                            <TableCell colSpan={5} align="center">
-                              <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                                Sin movimientos recientes
-                              </Typography>
-                            </TableCell>
+                            <TableCell>Material</TableCell>
+                            <TableCell>Tipo</TableCell>
+                            <TableCell>Cantidad</TableCell>
+                            <TableCell>Usuario</TableCell>
+                            <TableCell>Fecha</TableCell>
                           </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                        </TableHead>
+                        <TableBody>
+                          {recentMovements.map((mov) => (
+                            <TableRow key={mov.id} hover>
+                              <TableCell>{mov.materialName}</TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={mov.type === 'entry' ? t('entry') : t('exit')}
+                                  color={mov.type === 'entry' ? 'success' : 'warning'}
+                                  size="small"
+                                />
+                              </TableCell>
+                              <TableCell>{mov.quantity}</TableCell>
+                              <TableCell>{mov.createdBy}</TableCell>
+                              <TableCell>
+                                {new Date(mov.movementDate).toLocaleDateString('es-MX')}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {recentMovements.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={5} align="center">
+                                <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                                  Sin movimientos recientes
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
                   </Box>
                 </Card>
               </Grid>

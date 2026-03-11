@@ -24,6 +24,7 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { CategoriesTable } from 'src/sections/inventory/categories-table';
 import { CategoryModal } from 'src/sections/inventory/category-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { categoriesApi } from 'src/services/apiService';
 import { useTranslation } from 'react-i18next';
@@ -102,7 +103,7 @@ const Page = () => {
       await fetchCategories();
       setSnackbar({ open: true, message: 'Categoría eliminada', severity: 'success' });
     } catch (err) {
-      const message = err.response?.data?.message || 'Error al eliminar categoría';
+      const message = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar categoría';
       setDeleteError(message);
     }
   }, [deletingCategory, fetchCategories]);
@@ -121,7 +122,7 @@ const Page = () => {
         setEditingCategory(null);
         await fetchCategories();
       } catch (err) {
-        const message = err.response?.data?.message || 'Error al guardar categoría';
+        const message = err.response?.data?.error || err.response?.data?.message || 'Error al guardar categoría';
         setSnackbar({ open: true, message, severity: 'error' });
       }
     },
@@ -133,13 +134,7 @@ const Page = () => {
     setEditingCategory(null);
   }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Remove full page blocking spinner
 
   return (
     <>
@@ -181,16 +176,20 @@ const Page = () => {
                 }}
               />
             </Card>
-            <CategoriesTable
-              count={filteredCategories.length}
-              items={paginatedCategories}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            {loading ? (
+              <TableSkeleton rowCount={8} colCount={4} />
+            ) : (
+              <CategoriesTable
+                count={filteredCategories.length}
+                items={paginatedCategories}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
           </Stack>
         </Container>
       </Box>

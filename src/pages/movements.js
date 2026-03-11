@@ -21,6 +21,7 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { MovementsTable } from 'src/sections/inventory/movements-table';
 import { MovementModal } from 'src/sections/inventory/movement-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { inventoryApi, materialsApi } from 'src/services/apiService';
 import { useTranslation } from 'react-i18next';
@@ -118,13 +119,7 @@ const Page = () => {
     [fetchData]
   );
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Remove full page blocking spinner
 
   return (
     <>
@@ -195,14 +190,18 @@ const Page = () => {
                 </TextField>
               </Stack>
             </Card>
-            <MovementsTable
-              count={filteredMovements.length}
-              items={paginatedMovements}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              page={page}
-              rowsPerPage={rowsPerPage}
-            />
+            {loading ? (
+              <TableSkeleton rowCount={8} colCount={5} />
+            ) : (
+              <MovementsTable
+                count={filteredMovements.length}
+                items={paginatedMovements}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                page={page}
+                rowsPerPage={rowsPerPage}
+              />
+            )}
           </Stack>
         </Container>
       </Box>

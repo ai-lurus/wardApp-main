@@ -17,6 +17,7 @@ import {
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { WarehouseMapEditor } from 'src/sections/warehouse/warehouse-map-editor';
 import { WarehouseMapView } from 'src/sections/warehouse/warehouse-map-view';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { warehouseApi, materialsApi } from 'src/services/apiService';
 
 const Page = () => {
@@ -158,8 +159,8 @@ const Page = () => {
             </Box>
 
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
+              <Box sx={{ height: 440, mb: 4 }}>
+                <TableSkeleton rowCount={5} colCount={3} />
               </Box>
             ) : (
               <>

@@ -4,6 +4,7 @@ import { Alert, Box, CircularProgress, Container, Snackbar, Stack, Typography } 
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { AlertsTable } from 'src/sections/inventory/alerts-table';
 import { MovementModal } from 'src/sections/inventory/movement-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { inventoryApi, materialsApi } from 'src/services/apiService';
 import { useTranslation } from 'react-i18next';
 
@@ -55,13 +56,7 @@ const Page = () => {
     }
   }, [fetchData]);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Remove full page blocking spinner
 
   return (
     <>
@@ -72,7 +67,11 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">{t('stockAlerts')}</Typography>
-            <AlertsTable items={alerts} onRegisterEntry={handleRegisterEntry} />
+            {loading ? (
+              <TableSkeleton rowCount={8} colCount={6} />
+            ) : (
+              <AlertsTable items={alerts} onRegisterEntry={handleRegisterEntry} />
+            )}
           </Stack>
         </Container>
       </Box>

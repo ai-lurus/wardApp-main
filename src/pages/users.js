@@ -19,6 +19,7 @@ import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { UsersTable } from 'src/sections/inventory/users-table';
 import { UserModal } from 'src/sections/inventory/user-modal';
+import { TableSkeleton } from 'src/components/table-skeleton';
 import { applyPagination } from 'src/utils/apply-pagination';
 import { usersApi } from 'src/services/apiService';
 import { useAuth } from 'src/hooks/use-auth';
@@ -125,7 +126,7 @@ const Page = () => {
     setEditingUser(null);
   }, []);
 
-  if (auth.isLoading || loading) {
+  if (auth.isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
         <CircularProgress />
@@ -173,17 +174,21 @@ const Page = () => {
                 ),
               }}
             />
-            <UsersTable
-              count={filteredUsers.length}
-              items={paginatedUsers}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onEdit={handleEdit}
-              onToggleStatus={handleToggleStatus}
-              currentUserId={auth.user?.id}
-            />
+            {loading ? (
+              <TableSkeleton rowCount={8} colCount={5} />
+            ) : (
+              <UsersTable
+                count={filteredUsers.length}
+                items={paginatedUsers}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onEdit={handleEdit}
+                onToggleStatus={handleToggleStatus}
+                currentUserId={auth.user?.id}
+              />
+            )}
           </Stack>
         </Container>
       </Box>
