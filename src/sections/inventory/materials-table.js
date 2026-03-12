@@ -16,6 +16,7 @@ import {
 import { Scrollbar } from 'src/components/scrollbar';
 import { StockLevelBar, getStockStatus } from 'src/components/stock-level-bar';
 import { useTranslation } from 'react-i18next';
+import { SecureImage } from 'src/components/secure-image';
 
 const statusChipConfig = {
   inStock: { label: 'inStock', color: 'success' },
@@ -28,7 +29,7 @@ export const MaterialsTable = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -45,6 +46,7 @@ export const MaterialsTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>#</TableCell>
                 <TableCell>{t('name')}</TableCell>
                 <TableCell>{t('category')}</TableCell>
                 <TableCell>{t('location')}</TableCell>
@@ -61,6 +63,13 @@ export const MaterialsTable = (props) => {
 
                 return (
                   <TableRow hover key={material.id}>
+                    <TableCell>
+                      <SecureImage
+                        path={material.imageUrl || null}
+                        variant="rounded"
+                        sx={{ width: 48, height: 48 }}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Typography variant="subtitle2">{material.name}</Typography>
                       {material.sku && (

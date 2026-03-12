@@ -112,6 +112,7 @@ export const items = [
     title: 'Operaciones',
     comingSoon: true,
     allowedRoles: ['admin'],
+    moduleId: 'operaciones',
     sectionDivider: true,
     icon: (
       <SvgIcon fontSize="small">
@@ -123,6 +124,7 @@ export const items = [
     title: 'Flotas',
     comingSoon: true,
     allowedRoles: ['admin'],
+    moduleId: 'flotas',
     icon: (
       <SvgIcon fontSize="small">
         <WrenchIcon />
@@ -133,6 +135,7 @@ export const items = [
     title: 'Clientes',
     comingSoon: true,
     allowedRoles: ['admin'],
+    moduleId: 'clientes',
     icon: (
       <SvgIcon fontSize="small">
         <UserGroupIcon />
@@ -143,6 +146,7 @@ export const items = [
     title: 'Finanzas',
     comingSoon: true,
     allowedRoles: ['admin'],
+    moduleId: 'finanzas',
     icon: (
       <SvgIcon fontSize="small">
         <BanknotesIcon />
@@ -168,6 +172,17 @@ export const items = [
         icon: (
           <SvgIcon fontSize="small">
             <UsersIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Suscripción',
+        path: '/billing',
+        adminOnly: true,
+        allowedRoles: ['admin'],
+        icon: (
+          <SvgIcon fontSize="small">
+            <BanknotesIcon />
           </SvgIcon>
         ),
       },

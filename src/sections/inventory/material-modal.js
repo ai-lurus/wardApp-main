@@ -6,10 +6,15 @@ import {
   Stack,
   TextField,
   Typography,
+  IconButton,
 } from '@mui/material';
+import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
+import { useState, useRef } from 'react';
+import { uploadFileToGCS } from 'src/utils/upload';
+import { SecureImage } from 'src/components/secure-image';
 
 const modalStyle = {
   position: 'absolute',
@@ -26,6 +31,9 @@ const modalStyle = {
 export const MaterialModal = ({ open, onClose, onSave, material, categories, zones = [] }) => {
   const { t } = useTranslation();
   const isEdit = Boolean(material);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(material?.imageUrl || '');
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -38,6 +46,7 @@ export const MaterialModal = ({ open, onClose, onSave, material, categories, zon
       unit: material?.unit || 'pieza',
       referencePrice: material?.referencePrice || '',
       minStock: material?.minStock || '',
+      imageUrl: material?.imageUrl || '',
     },
     validationSchema: Yup.object({
       name: Yup.string().required(t('required')),
@@ -56,7 +65,37 @@ export const MaterialModal = ({ open, onClose, onSave, material, categories, zon
 
   const handleClose = () => {
     formik.resetForm();
+    setPreviewUrl('');
     onClose();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const token = window.sessionStorage.getItem('token');
+      // Upload to GCS now returns the relative bucket path (e.g. materials/timestamp-file.png)
+      const path = await uploadFileToGCS(file, token, 'materials');
+
+      // We can preview it instantly by assigning a Object URL locally before saving
+      setPreviewUrl(URL.createObjectURL(file));
+      formik.setFieldValue('imageUrl', path);
+    } catch (err) {
+      console.error('Error uploading image', err);
+      // You may use the parent's snackbar to show this error
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPreviewUrl('');
+    formik.setFieldValue('imageUrl', '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -67,6 +106,71 @@ export const MaterialModal = ({ open, onClose, onSave, material, categories, zon
         </Typography>
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={2}>
+            {/* Image Upload Section */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 1,
+                  bgcolor: 'neutral.100',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  border: '1px dashed',
+                  borderColor: 'neutral.300',
+                }}
+              >
+                {formik.values.imageUrl || previewUrl ? (
+                  <>
+                    {previewUrl && !previewUrl.startsWith('http') && !previewUrl.startsWith('blob:') ? (
+                      <SecureImage path={previewUrl} sx={{ width: '100%', height: '100%', borderRadius: 0 }} />
+                    ) : (
+                      <img src={previewUrl} alt="Material" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+
+                    <IconButton
+                      size="small"
+                      onClick={handleRemoveImage}
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 2,
+                        bgcolor: 'rgba(0,0,0,0.5)',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' }
+                      }}
+                    >
+                      <XMarkIcon style={{ width: 14, height: 14, color: '#fff' }} />
+                    </IconButton>
+                  </>
+                ) : (
+                  <PhotoIcon style={{ width: 32, height: 32, color: '#9CA3AF' }} />
+                )}
+              </Box>
+              <Box>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? 'Subiendo...' : 'Subir Imagen'}
+                </Button>
+                <Typography variant="caption" display="block" color="text.secondary" mt={0.5}>
+                  Formatos recomendados: JPG, PNG. Max 5MB.
+                </Typography>
+              </Box>
+            </Box>
+
             <TextField
               fullWidth
               label={t('name')}

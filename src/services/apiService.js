@@ -45,6 +45,7 @@ const normalizeMaterial = (m) => ({
   minStock: m.min_stock,
   currentStock: m.current_stock,
   active: m.active,
+  imageUrl: m.image_url || null,
   createdAt: m.created_at,
   updatedAt: m.updated_at,
 });
@@ -94,6 +95,7 @@ const toMaterialPayload = (values) => ({
   unit: values.unit,
   reference_price: Number(values.referencePrice),
   min_stock: Number(values.minStock),
+  image_url: values.imageUrl || undefined,
 });
 
 const toEntryPayload = (values) => ({
@@ -314,6 +316,8 @@ const normalizeCompany = (c) => ({
   name: c.name,
   slug: c.slug,
   active: c.active,
+  activeModules: c.active_modules || ['inventario'],
+  subscriptionStatus: c.subscription_status,
   createdAt: c.created_at,
   userCount: c._count?.users ?? 0,
   users: c.users?.map(normalizeUser) ?? undefined,
@@ -339,11 +343,28 @@ export const adminApi = {
     api.post(`/admin/companies/${companyId}/users`, data).then((r) => normalizeUser(r.data)),
 };
 
+// ─── Billing ───────────────────────────────────────────
+
+export const billingApi = {
+  createCheckoutSession: (modules, returnUrl) =>
+    api.post('/billing/create-checkout-session', { modules, returnUrl }).then((r) => r.data),
+
+  createPortalSession: (returnUrl) =>
+    api.post('/billing/create-portal-session', { returnUrl }).then((r) => r.data),
+};
+
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
 
 export const fetchTransportData = async () => [];
 export const postTransport = async () => [];
 export const fetchDestiniesData = async () => [];
 export const postDestiny = async () => false;
+
+// ─── Uploads ───────────────────────────────────────────
+
+export const uploadApi = {
+  getSignedUrl: (path) =>
+    api.get('/upload/url', { params: { path } }).then((r) => r.data.url),
+};
 
 export default api;

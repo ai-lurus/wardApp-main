@@ -7,6 +7,9 @@ import {
   Stack,
   TextField,
   Typography,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -18,12 +21,22 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 480,
+  width: 540,
+  maxHeight: '90vh',
+  overflowY: 'auto',
   bgcolor: 'background.paper',
   boxShadow: 24,
   borderRadius: 1,
   p: 3,
 };
+
+const ALL_MODULES = [
+  { id: 'inventario', name: 'Inventario' },
+  { id: 'operaciones', name: 'Operaciones' },
+  { id: 'flotas', name: 'Flotas' },
+  { id: 'clientes', name: 'Clientes' },
+  { id: 'finanzas', name: 'Finanzas' },
+];
 
 const createSchema = Yup.object({
   name: Yup.string().required('Requerido'),
@@ -41,6 +54,7 @@ const editSchema = Yup.object({
     .matches(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones')
     .required('Requerido'),
   active: Yup.boolean(),
+  active_modules: Yup.array().of(Yup.string()),
 });
 
 export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
@@ -49,7 +63,7 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: isEdit
-      ? { name: company.name, slug: company.slug, active: company.active }
+      ? { name: company.name, slug: company.slug, active: company.active, active_modules: company.activeModules || ['inventario'] }
       : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' },
     validationSchema: isEdit ? editSchema : createSchema,
     onSubmit: async (values, helpers) => {
@@ -140,6 +154,36 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
                   error={formik.touched.adminPassword && !!formik.errors.adminPassword}
                   helperText={formik.touched.adminPassword && formik.errors.adminPassword}
                 />
+              </>
+            )}
+
+            {isEdit && (
+              <>
+                <Divider>Módulos Asignados</Divider>
+                <FormGroup>
+                  {ALL_MODULES.map((mod) => (
+                    <FormControlLabel
+                      key={mod.id}
+                      control={
+                        <Checkbox
+                          checked={formik.values.active_modules?.includes(mod.id)}
+                          onChange={(e) => {
+                            const prev = formik.values.active_modules || [];
+                            if (e.target.checked) {
+                              formik.setFieldValue('active_modules', [...prev, mod.id]);
+                            } else {
+                              formik.setFieldValue(
+                                'active_modules',
+                                prev.filter((m) => m !== mod.id)
+                              );
+                            }
+                          }}
+                        />
+                      }
+                      label={mod.name}
+                    />
+                  ))}
+                </FormGroup>
               </>
             )}
           </Stack>

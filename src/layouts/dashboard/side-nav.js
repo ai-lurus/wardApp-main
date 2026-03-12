@@ -59,7 +59,7 @@ export const SideNav = (props) => {
     inventoryApi
       .getAlerts()
       .then(setAlerts)
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Auto-open the group that contains the active route
@@ -87,8 +87,16 @@ export const SideNav = (props) => {
   const userRole = auth.user?.role;
 
   const isAllowed = (item) => {
-    if (item.allowedRoles) return item.allowedRoles.includes(userRole);
-    if (item.adminOnly) return userRole === 'admin';
+    // 1. Role checks
+    if (item.allowedRoles && !item.allowedRoles.includes(userRole)) return false;
+    if (item.adminOnly && userRole !== 'admin') return false;
+
+    // 2. Module access checks (Company setting)
+    // By default, if an item requires a specific module, check the company's active_modules.
+    if (item.moduleId && auth.user?.company?.active_modules) {
+      if (!auth.user.company.active_modules.includes(item.moduleId)) return false;
+    }
+
     return true;
   };
 
@@ -116,17 +124,17 @@ export const SideNav = (props) => {
       // ── Section divider (e.g. before coming-soon modules) ──
       const divider = item.sectionDivider && !collapsed
         ? [
-            <li key={`${item.title}__divider`} style={{ listStyle: 'none' }}>
-              <Divider sx={{ borderColor: 'neutral.700', my: 1 }} />
-            </li>,
-          ]
+          <li key={`${item.title}__divider`} style={{ listStyle: 'none' }}>
+            <Divider sx={{ borderColor: 'neutral.700', my: 1 }} />
+          </li>,
+        ]
         : item.sectionDivider && collapsed
-        ? [
+          ? [
             <li key={`${item.title}__divider`} style={{ listStyle: 'none' }}>
               <Divider sx={{ borderColor: 'neutral.700', my: 1 }} />
             </li>,
           ]
-        : [];
+          : [];
 
       // ── Standalone leaf item (Inicio) ──
       if (!item.children && !item.comingSoon) {
