@@ -33,7 +33,7 @@ export const MaterialModal = ({ open, onClose, onSave, material, categories, zon
   const isEdit = Boolean(material);
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(material?.imageUrl || '');
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -125,10 +125,12 @@ export const MaterialModal = ({ open, onClose, onSave, material, categories, zon
               >
                 {formik.values.imageUrl || previewUrl ? (
                   <>
-                    {previewUrl && !previewUrl.startsWith('http') && !previewUrl.startsWith('blob:') ? (
-                      <SecureImage path={previewUrl} sx={{ width: '100%', height: '100%', borderRadius: 0 }} />
-                    ) : (
+                    {previewUrl ? (
+                      // Blob URL from a newly selected local file
                       <img src={previewUrl} alt="Material" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      // Saved GCS path — fetch via signed URL
+                      <SecureImage path={formik.values.imageUrl} sx={{ width: '100%', height: '100%', borderRadius: 0 }} />
                     )}
 
                     <IconButton
