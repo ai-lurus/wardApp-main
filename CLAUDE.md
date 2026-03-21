@@ -144,3 +144,146 @@ Dashboard:
 - Commits: en inglés
 - Rama principal: **main** (nunca master)
 - Credenciales demo: `admin@demo.com` / `demo123`
+
+---
+
+## REGLAS CRÍTICAS — Léelas antes de tocar cualquier cosa
+
+### 1. Pages Router ÚNICAMENTE — No usar App Router
+
+Este proyecto usa **Next.js 13 con Pages Router**. NO usar:
+- `app/` directory
+- `use client` / `use server` directives
+- `layout.tsx` de App Router
+- `loading.tsx`, `error.tsx` de App Router
+- `server components`
+
+Todo va en `src/pages/`. El único layout que existe es `DashboardLayout`.
+
+---
+
+### 2. JavaScript — No TypeScript en el frontend
+
+El frontend es **JavaScript puro** (`.js`, `.jsx`). No agregar archivos `.ts` o `.tsx`.
+
+---
+
+### 3. Toda página nueva requiere el patrón `getLayout`
+
+```javascript
+// CORRECTO
+const MiPagina = () => { /* ... */ };
+MiPagina.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+export default MiPagina;
+
+// INCORRECTO — no envolver en DashboardLayout dentro del componente
+```
+
+---
+
+### 4. ApexCharts siempre con dynamic import
+
+```javascript
+// CORRECTO — evita errores SSR
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
+// INCORRECTO
+import Chart from 'react-apexcharts';
+```
+
+Además: **nunca** pasar `series` con todos los valores en cero a un donut chart — causa error interno en v3.37.
+
+---
+
+### 5. Componentes UI — solo MUI v5
+
+No instalar ni usar otras librerías de UI (Tailwind, Chakra, Ant Design, shadcn, etc.).
+Usar exclusivamente `@mui/material` v5, `@mui/x-date-pickers` v5, y Emotion.
+
+---
+
+### 6. Formularios — Formik + Yup
+
+```javascript
+// CORRECTO
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+
+// INCORRECTO — no usar React Hook Form ni otros en este proyecto
+import { useForm } from 'react-hook-form';
+```
+
+---
+
+### 7. API calls — solo a través de `src/services/apiService.js`
+
+No hacer llamadas Axios directas en componentes. Agregar nuevos endpoints en `apiService.js`.
+
+```javascript
+// CORRECTO
+import { materialsApi } from '../services/apiService';
+const data = await materialsApi.getAll();
+
+// INCORRECTO
+import axios from 'axios';
+const data = await axios.get('http://localhost:3001/api/materials');
+```
+
+---
+
+### 8. Auth — usar `useAuth()` hook
+
+```javascript
+import { useAuth } from '../hooks/useAuth';
+const { user } = useAuth();
+// user.companyId, user.role, user.token
+```
+
+No acceder al localStorage ni decodificar el JWT manualmente.
+
+---
+
+### 9. Nuevos items de navegación van en `config.js`
+
+Para agregar una sección al sidebar, editar `src/layouts/dashboard/config.js`.
+No hardcodear links de navegación en otros componentes.
+
+---
+
+### 10. Páginas que NO tocar (no son del MVP)
+
+- `pages/companies.js`
+- `pages/customers.js`
+- `pages/monitoring/*`
+- `pages/store.js`
+
+---
+
+## Dependencias instaladas (no reinstalar ni reemplazar)
+
+| Librería | Versión | Uso |
+|----------|---------|-----|
+| next | 13.x | Framework |
+| react | 18.x | UI |
+| @mui/material | 5.x | Componentes UI |
+| @mui/x-date-pickers | 5.x | Date pickers |
+| date-fns | 2.x | Fechas |
+| react-apexcharts | 3.37.x | Gráficas |
+| formik | - | Formularios |
+| yup | - | Validación de esquemas |
+| axios | - | HTTP |
+| i18next | - | i18n (español) |
+| zustand | - | Estado global |
+| @heroicons/react | 24/solid | Iconos |
+
+---
+
+## Lo que NO hacer
+
+- No migrar a TypeScript en el frontend
+- No agregar Tailwind CSS
+- No usar App Router
+- No crear componentes que importen `react-apexcharts` directamente (sin dynamic)
+- No hacer fetch directo — todo por `apiService.js`
+- No agregar librerías de UI alternativas a MUI
+- No usar `pages/companies.js` ni `pages/monitoring/*` como referencia (son páginas abandonadas)
