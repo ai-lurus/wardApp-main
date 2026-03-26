@@ -115,6 +115,15 @@ export const AuthProvider = (props) => {
     throw new Error('Sign up is not implemented');
   };
 
+  const refreshUser = async () => {
+    try {
+      const user = await authApi.getMe();
+      dispatch({ type: HANDLERS.INITIALIZE, payload: user });
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+  };
+
   const signOut = () => {
     window.sessionStorage.removeItem('token');
     dispatch({
@@ -128,7 +137,8 @@ export const AuthProvider = (props) => {
         ...state,
         signIn,
         signUp,
-        signOut
+        signOut,
+        refreshUser
       }}
     >
       {children}

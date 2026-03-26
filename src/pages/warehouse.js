@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { WarehouseMapEditor } from 'src/sections/warehouse/warehouse-map-editor';
 import { WarehouseMapView } from 'src/sections/warehouse/warehouse-map-view';
 import { TableSkeleton } from 'src/components/table-skeleton';
@@ -238,6 +239,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout><SubscriptionGuard>{page}</SubscriptionGuard></DashboardLayout>;
 
 export default Page;

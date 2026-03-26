@@ -48,7 +48,7 @@ const Page = () => {
         router.push('/');
       } catch (err) {
         helpers.setStatus({ success: false });
-        const message = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+        const message = err.response?.data?.error || err.response?.data?.message || 'Correo o contraseña incorrectos';
         helpers.setErrors({ submit: message });
         helpers.setSubmitting(false);
       }

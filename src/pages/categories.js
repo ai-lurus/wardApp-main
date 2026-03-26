@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import MagnifyingGlassIcon from '@heroicons/react/24/solid/MagnifyingGlassIcon';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { CategoriesTable } from 'src/sections/inventory/categories-table';
 import { CategoryModal } from 'src/sections/inventory/category-modal';
 import { TableSkeleton } from 'src/components/table-skeleton';
@@ -236,6 +237,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout><SubscriptionGuard>{page}</SubscriptionGuard></DashboardLayout>;
 
 export default Page;

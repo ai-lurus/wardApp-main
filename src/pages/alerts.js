@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Alert, Box, CircularProgress, Container, Snackbar, Stack, Typography } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { AlertsTable } from 'src/sections/inventory/alerts-table';
 import { MovementModal } from 'src/sections/inventory/movement-modal';
 import { TableSkeleton } from 'src/components/table-skeleton';
@@ -99,6 +100,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout><SubscriptionGuard>{page}</SubscriptionGuard></DashboardLayout>;
 
 export default Page;

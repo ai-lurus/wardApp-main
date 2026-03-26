@@ -32,6 +32,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import esLocale from 'date-fns/locale/es';
 import { subDays, startOfDay, endOfDay, format, isWithinInterval } from 'date-fns';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { inventoryApi } from 'src/services/apiService';
 
 // ApexCharts must be loaded client-side only (no SSR)
@@ -542,6 +543,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout><SubscriptionGuard>{page}</SubscriptionGuard></DashboardLayout>;
 
 export default Page;

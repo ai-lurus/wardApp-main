@@ -18,10 +18,12 @@ api.interceptors.request.use((config) => {
 });
 
 // Handle 401 responses globally (token expired/invalid)
+// Exclude the login endpoint — a 401 there means wrong credentials, not expired token
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    if (error.response?.status === 401 && !isLoginRequest) {
       window.sessionStorage.removeItem('token');
       window.location.href = '/auth/login';
     }

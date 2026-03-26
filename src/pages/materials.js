@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
+import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { MaterialsTable } from 'src/sections/inventory/materials-table';
 import { MaterialsSearch } from 'src/sections/inventory/materials-search';
 import { MaterialModal } from 'src/sections/inventory/material-modal';
@@ -40,7 +41,7 @@ const Page = () => {
     try {
       setLoading(true);
       const [matResult, cats, zns] = await Promise.all([
-        materialsApi.list({ active: !showInactive }),
+        materialsApi.list({ active: !showInactive, limit: 1000 }),
         categoriesApi.list(),
         warehouseApi.getZones(),
       ]);
@@ -207,6 +208,6 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => <DashboardLayout><SubscriptionGuard>{page}</SubscriptionGuard></DashboardLayout>;
 
 export default Page;

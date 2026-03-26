@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
-  MenuItem,
   Modal,
   Stack,
   TextField,
@@ -80,23 +80,29 @@ export const MovementModal = ({ open, onClose, onSave, type, materials, preselec
         </Typography>
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={2}>
-            <TextField
+            <Autocomplete
               fullWidth
-              select
-              label={t('material')}
-              name="materialId"
-              value={formik.values.materialId}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.materialId && Boolean(formik.errors.materialId)}
-              helperText={formik.touched.materialId && formik.errors.materialId}
-            >
-              {materials.map((m) => (
-                <MenuItem key={m.id} value={m.id}>
-                  {m.name} {!isEntry ? `(${t('stock')}: ${m.currentStock})` : ''}
-                </MenuItem>
-              ))}
-            </TextField>
+              options={materials}
+              getOptionLabel={(option) =>
+                option.name
+                  ? `${option.name}${!isEntry ? ` (${t('stock')}: ${option.currentStock})` : ''}`
+                  : ''
+              }
+              value={materials.find((m) => m.id === formik.values.materialId) || null}
+              onChange={(_, newValue) => {
+                formik.setFieldValue('materialId', newValue ? newValue.id : '');
+              }}
+              onBlur={() => formik.setFieldTouched('materialId', true)}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('material')}
+                  error={formik.touched.materialId && Boolean(formik.errors.materialId)}
+                  helperText={formik.touched.materialId && formik.errors.materialId}
+                />
+              )}
+            />
 
             {!isEntry && selectedMaterial && (
               <Alert severity={selectedMaterial.currentStock <= selectedMaterial.minStock ? 'warning' : 'info'}>

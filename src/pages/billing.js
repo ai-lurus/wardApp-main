@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import {
     Box,
@@ -33,25 +34,50 @@ const ALL_MODULES = [
 ];
 
 const Page = () => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const { t } = useTranslation();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
+
+    // After Stripe redirects back with ?status=success, poll until subscription is active
+    useEffect(() => {
+        if (router.query.status !== 'success') return;
+
+        router.replace('/billing', undefined, { shallow: true });
+
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        const poll = async () => {
+            await refreshUser();
+            attempts++;
+            // Keep polling until active or max attempts reached
+            const currentStatus = user?.company?.subscription_status;
+            if (currentStatus !== 'active' && currentStatus !== 'trialing' && attempts < maxAttempts) {
+                setTimeout(poll, 2000);
+            }
+        };
+
+        setTimeout(poll, 1500); // Wait 1.5s before first attempt
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router.query.status]);
 
     const activeModules = user?.company?.active_modules || ['inventario'];
     const status = user?.company?.subscription_status;
+
+    const isActiveSubscription = status === 'active' || status === 'trialing';
 
     const handleManageSubscription = async () => {
         try {
             setLoading(true);
             const returnUrl = window.location.origin + '/billing';
 
-            if (status) {
-                // Manage via portal
+            if (isActiveSubscription) {
+                // Active/trialing → manage via Stripe portal
                 const { url } = await billingApi.createPortalSession(returnUrl);
                 window.location.href = url;
             } else {
-                // For checkout, we pass the active modules or pre-select them.
-                // Usually, users select modules here. For this MVP, we pass what they have.
+                // No subscription or canceled → new checkout
                 const { url } = await billingApi.createCheckoutSession(activeModules, returnUrl);
                 window.location.href = url;
             }
@@ -97,8 +123,12 @@ const Page = () => {
                                                         <Chip label="Suscripción Activa" color="success" />
                                                     ) : status === 'trialing' ? (
                                                         <Chip label="Periodo de Prueba" color="warning" />
+                                                    ) : status === 'past_due' ? (
+                                                        <Chip label="Pago Pendiente" color="error" />
+                                                    ) : status === 'canceled' ? (
+                                                        <Chip label="Cancelada" color="default" />
                                                     ) : (
-                                                        <Chip label="Inactiva / Gratis" color="default" />
+                                                        <Chip label="Sin suscripción" color="default" />
                                                     )}
                                                 </Box>
                                             </Box>
@@ -109,7 +139,7 @@ const Page = () => {
                                                     onClick={handleManageSubscription}
                                                     disabled={loading}
                                                 >
-                                                    {status ? 'Gestionar Facturación' : 'Obtener Suscripción Pro'}
+                                                    {isActiveSubscription ? 'Gestionar Facturación' : 'Obtener Suscripción Pro'}
                                                 </Button>
                                             </Box>
                                         </Stack>
