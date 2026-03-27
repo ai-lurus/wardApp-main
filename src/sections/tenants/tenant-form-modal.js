@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Alert,
   Box,
@@ -43,6 +44,10 @@ const createSchema = Yup.object({
   slug: Yup.string()
     .matches(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones')
     .required('Requerido'),
+  active_modules: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Seleccione al menos un módulo')
+    .required('Requerido'),
   adminEmail: Yup.string().email('Email inválido').required('Requerido'),
   adminName: Yup.string().required('Requerido'),
   adminPassword: Yup.string().min(8, 'Mínimo 8 caracteres').required('Requerido'),
@@ -54,7 +59,10 @@ const editSchema = Yup.object({
     .matches(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones')
     .required('Requerido'),
   active: Yup.boolean(),
-  active_modules: Yup.array().of(Yup.string()),
+  active_modules: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Seleccione al menos un módulo')
+    .required('Requerido'),
 });
 
 export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
@@ -64,7 +72,7 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
     enableReinitialize: true,
     initialValues: isEdit
       ? { name: company.name, slug: company.slug, active: company.active, active_modules: company.activeModules || ['inventario'] }
-      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' },
+      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '', active_modules: ['inventario'] },
     validationSchema: isEdit ? editSchema : createSchema,
     onSubmit: async (values, helpers) => {
       try {
@@ -81,13 +89,22 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const autoSlug = (name) =>
     name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open}
+      onClose={onClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6" mb={2}>
+        <Typography variant="h6"
+          mb={2}>
           {isEdit ? 'Editar empresa' : 'Nueva empresa'}
         </Typography>
         <Divider sx={{ mb: 2 }} />
@@ -156,40 +173,48 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
                 />
               </>
             )}
-
-            {isEdit && (
-              <>
-                <Divider>Módulos Asignados</Divider>
-                <FormGroup>
-                  {ALL_MODULES.map((mod) => (
-                    <FormControlLabel
-                      key={mod.id}
-                      control={
-                        <Checkbox
-                          checked={formik.values.active_modules?.includes(mod.id)}
-                          onChange={(e) => {
-                            const prev = formik.values.active_modules || [];
-                            if (e.target.checked) {
-                              formik.setFieldValue('active_modules', [...prev, mod.id]);
-                            } else {
-                              formik.setFieldValue(
-                                'active_modules',
-                                prev.filter((m) => m !== mod.id)
-                              );
-                            }
-                          }}
-                        />
-                      }
-                      label={mod.name}
+            <Divider>Módulos Asignados</Divider>
+            <FormGroup>
+              {ALL_MODULES.map((mod) => (
+                <FormControlLabel
+                  key={mod.id}
+                  control={
+                    <Checkbox
+                      checked={formik.values.active_modules?.includes(mod.id)}
+                      onChange={(e) => {
+                        const prev = formik.values.active_modules || [];
+                        if (e.target.checked) {
+                          formik.setFieldValue('active_modules', [...prev, mod.id]);
+                        } else {
+                          formik.setFieldValue(
+                            'active_modules',
+                            prev.filter((m) => m !== mod.id)
+                          );
+                        }
+                      }}
                     />
-                  ))}
-                </FormGroup>
-              </>
+                  }
+                  label={mod.name}
+                />
+              ))}
+            </FormGroup>
+            {formik.touched.active_modules && !!formik.errors.active_modules && (
+              <Typography variant="caption"
+                color="error"
+                sx={{ ml: 2, mt: 1 }}>
+                {formik.errors.active_modules}
+              </Typography>
             )}
           </Stack>
-          <Stack direction="row" spacing={1} justifyContent="flex-end" mt={3}>
-            <Button onClick={onClose} color="inherit">Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={formik.isSubmitting}>
+          <Stack direction="row"
+            spacing={1}
+            justifyContent="flex-end"
+            mt={3}>
+            <Button onClick={onClose}
+              color="inherit">Cancelar</Button>
+            <Button type="submit"
+              variant="contained"
+              disabled={formik.isSubmitting}>
               {isEdit ? 'Guardar' : 'Crear empresa'}
             </Button>
           </Stack>
