@@ -108,3 +108,23 @@ material-kit-react
 
 - Email Us: support@deviasio.zendesk.com
 # wardApp
+
+## Configuración de Ambientes
+
+Para que el frontend se comunique correctamente con el backend, es necesario configurar las variables de entorno.
+
+### Pasos para configuración local:
+1. Crea un archivo `.env` o `.env.local` en la raíz del proyecto.
+2. Copia el contenido de `.env.example`.
+3. Asegúrate de que `NEXT_PUBLIC_API_URL` apunte a tu servidor backend local (ej. `http://localhost:3001/api`).
+
+### Ambientes Disponibles:
+
+| Ambiente | URL sugerida para `NEXT_PUBLIC_API_URL` |
+|----------|----------------------------------------|
+| **Local** | `http://localhost:3001/api` |
+| **Staging** | `https://api-staging.wardapp.com.mx/api` |
+| **Prod** | `https://api.wardapp.com.mx/api` |
+
+### Mantenimiento:
+Todas las referencias a las variables de entorno se han centralizado en `src/config/env.config.js`. Si necesitas agregar una nueva variable que dependa del entorno, hazlo en ese archivo para mantener la consistencia.

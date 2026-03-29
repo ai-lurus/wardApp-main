@@ -1,3 +1,5 @@
+import { config } from '../config/env.config';
+
 /**
  * Uploads a file to the backend `/api/upload` endpoint and returns its public URL.
  *
@@ -15,7 +17,7 @@ export const uploadFileToGCS = async (file, token, folder = "general") => {
     formData.append("file", file);
     formData.append("folder", folder);
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const baseUrl = config.apiBaseUrl;
     const uploadUrl = baseUrl.endsWith('/api') ? `${baseUrl}/upload` : `${baseUrl}/api/upload`;
 
     const response = await fetch(uploadUrl, {
