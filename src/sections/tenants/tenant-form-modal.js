@@ -16,6 +16,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { adminApi } from 'src/services/apiService';
+import { MODULES } from 'src/constants/modules';
 
 const modalStyle = {
   position: 'absolute',
@@ -32,11 +33,11 @@ const modalStyle = {
 };
 
 const ALL_MODULES = [
-  { id: 'inventario', name: 'Inventario' },
-  { id: 'operaciones', name: 'Operaciones' },
-  { id: 'flotas', name: 'Flotas' },
-  { id: 'clientes', name: 'Clientes' },
-  { id: 'finanzas', name: 'Finanzas' },
+  { id: MODULES.INVENTARIO, name: 'Inventario' },
+  { id: MODULES.OPERACIONES, name: 'Operaciones' },
+  { id: MODULES.FLOTAS, name: 'Flotas' },
+  { id: MODULES.CLIENTES, name: 'Clientes' },
+  { id: MODULES.FINANZAS, name: 'Finanzas' },
 ];
 
 const createSchema = Yup.object({
@@ -71,8 +72,8 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: isEdit
-      ? { name: company.name, slug: company.slug, active: company.active, active_modules: (company.activeModules && company.activeModules.length > 0) ? company.activeModules : ['inventario'] }
-      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '', active_modules: ['inventario'] },
+      ? { name: company.name, slug: company.slug, active: company.active, active_modules: (company.activeModules && company.activeModules.length > 0) ? company.activeModules : [MODULES.INVENTARIO] }
+      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '', active_modules: [MODULES.INVENTARIO] },
     validationSchema: isEdit ? editSchema : createSchema,
     onSubmit: async (values, helpers) => {
       try {
