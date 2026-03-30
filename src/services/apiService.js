@@ -318,7 +318,7 @@ const normalizeCompany = (c) => ({
   name: c.name,
   slug: c.slug,
   active: c.active,
-  activeModules: c.active_modules || ['inventario'],
+  activeModules: (c.active_modules && c.active_modules.length > 0) ? c.active_modules : ['inventario'],
   subscriptionStatus: c.subscription_status,
   createdAt: c.created_at,
   userCount: c._count?.users ?? 0,

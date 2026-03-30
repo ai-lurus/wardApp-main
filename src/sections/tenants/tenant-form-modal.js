@@ -71,7 +71,7 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: isEdit
-      ? { name: company.name, slug: company.slug, active: company.active, active_modules: company.activeModules || ['inventario'] }
+      ? { name: company.name, slug: company.slug, active: company.active, active_modules: (company.activeModules && company.activeModules.length > 0) ? company.activeModules : ['inventario'] }
       : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '', active_modules: ['inventario'] },
     validationSchema: isEdit ? editSchema : createSchema,
     onSubmit: async (values, helpers) => {
@@ -182,6 +182,7 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
                     <Checkbox
                       checked={formik.values.active_modules?.includes(mod.id)}
                       onChange={(e) => {
+                        formik.setFieldTouched('active_modules', true);
                         const prev = formik.values.active_modules || [];
                         if (e.target.checked) {
                           formik.setFieldValue('active_modules', [...prev, mod.id]);
@@ -198,7 +199,7 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
                 />
               ))}
             </FormGroup>
-            {formik.touched.active_modules && !!formik.errors.active_modules && (
+            {(formik.touched.active_modules || formik.submitCount > 0) && !!formik.errors.active_modules && (
               <Typography variant="caption"
                 color="error"
                 sx={{ ml: 2, mt: 1 }}>
