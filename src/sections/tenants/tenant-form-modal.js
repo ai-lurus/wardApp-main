@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Alert,
   Box,
@@ -15,6 +16,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { adminApi } from 'src/services/apiService';
+import { MODULES } from 'src/constants/modules';
 
 const modalStyle = {
   position: 'absolute',
@@ -31,17 +33,21 @@ const modalStyle = {
 };
 
 const ALL_MODULES = [
-  { id: 'inventario', name: 'Inventario' },
-  { id: 'operaciones', name: 'Operaciones' },
-  { id: 'flotas', name: 'Flotas' },
-  { id: 'clientes', name: 'Clientes' },
-  { id: 'finanzas', name: 'Finanzas' },
+  { id: MODULES.INVENTARIO, name: 'Inventario' },
+  { id: MODULES.OPERACIONES, name: 'Operaciones' },
+  { id: MODULES.FLOTAS, name: 'Flotas' },
+  { id: MODULES.CLIENTES, name: 'Clientes' },
+  { id: MODULES.FINANZAS, name: 'Finanzas' },
 ];
 
 const createSchema = Yup.object({
   name: Yup.string().required('Requerido'),
   slug: Yup.string()
     .matches(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones')
+    .required('Requerido'),
+  active_modules: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Seleccione al menos un módulo')
     .required('Requerido'),
   adminEmail: Yup.string().email('Email inválido').required('Requerido'),
   adminName: Yup.string().required('Requerido'),
@@ -54,7 +60,10 @@ const editSchema = Yup.object({
     .matches(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones')
     .required('Requerido'),
   active: Yup.boolean(),
-  active_modules: Yup.array().of(Yup.string()),
+  active_modules: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Seleccione al menos un módulo')
+    .required('Requerido'),
 });
 
 export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
@@ -63,8 +72,8 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: isEdit
-      ? { name: company.name, slug: company.slug, active: company.active, active_modules: company.activeModules || ['inventario'] }
-      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' },
+      ? { name: company.name, slug: company.slug, active: company.active, active_modules: (company.activeModules && company.activeModules.length > 0) ? company.activeModules : [MODULES.INVENTARIO] }
+      : { name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '', active_modules: [MODULES.INVENTARIO] },
     validationSchema: isEdit ? editSchema : createSchema,
     onSubmit: async (values, helpers) => {
       try {
@@ -76,18 +85,29 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
         onSaved();
         onClose();
       } catch (err) {
-        helpers.setStatus(err.response?.data?.message ?? 'Error al guardar');
+        helpers.setStatus(err.response?.data?.error ?
+          `${'Error al guardar: ' + err.response?.data?.error}` :
+          'Error al guardar');
       }
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const autoSlug = (name) =>
     name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open}
+      onClose={onClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6" mb={2}>
+        <Typography variant="h6"
+          mb={2}>
           {isEdit ? 'Editar empresa' : 'Nueva empresa'}
         </Typography>
         <Divider sx={{ mb: 2 }} />
@@ -100,9 +120,11 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
               name="name"
               value={formik.values.name}
               onChange={(e) => {
+                const newName = e.target.value;
+                const expectedPreviousSlug = autoSlug(formik.values.name || '');
                 formik.handleChange(e);
-                if (!isEdit && !formik.touched.slug) {
-                  formik.setFieldValue('slug', autoSlug(e.target.value));
+                if (!isEdit && (formik.values.slug === expectedPreviousSlug || !formik.values.slug)) {
+                  formik.setFieldValue('slug', autoSlug(newName));
                 }
               }}
               onBlur={formik.handleBlur}
@@ -156,40 +178,49 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
                 />
               </>
             )}
-
-            {isEdit && (
-              <>
-                <Divider>Módulos Asignados</Divider>
-                <FormGroup>
-                  {ALL_MODULES.map((mod) => (
-                    <FormControlLabel
-                      key={mod.id}
-                      control={
-                        <Checkbox
-                          checked={formik.values.active_modules?.includes(mod.id)}
-                          onChange={(e) => {
-                            const prev = formik.values.active_modules || [];
-                            if (e.target.checked) {
-                              formik.setFieldValue('active_modules', [...prev, mod.id]);
-                            } else {
-                              formik.setFieldValue(
-                                'active_modules',
-                                prev.filter((m) => m !== mod.id)
-                              );
-                            }
-                          }}
-                        />
-                      }
-                      label={mod.name}
+            <Divider>Módulos Asignados</Divider>
+            <FormGroup>
+              {ALL_MODULES.map((mod) => (
+                <FormControlLabel
+                  key={mod.id}
+                  control={
+                    <Checkbox
+                      checked={formik.values.active_modules?.includes(mod.id)}
+                      onChange={(e) => {
+                        formik.setFieldTouched('active_modules', true);
+                        const prev = formik.values.active_modules || [];
+                        if (e.target.checked) {
+                          formik.setFieldValue('active_modules', [...prev, mod.id]);
+                        } else {
+                          formik.setFieldValue(
+                            'active_modules',
+                            prev.filter((m) => m !== mod.id)
+                          );
+                        }
+                      }}
                     />
-                  ))}
-                </FormGroup>
-              </>
+                  }
+                  label={mod.name}
+                />
+              ))}
+            </FormGroup>
+            {(formik.touched.active_modules || formik.submitCount > 0) && !!formik.errors.active_modules && (
+              <Typography variant="caption"
+                color="error"
+                sx={{ ml: 2, mt: 1 }}>
+                {formik.errors.active_modules}
+              </Typography>
             )}
           </Stack>
-          <Stack direction="row" spacing={1} justifyContent="flex-end" mt={3}>
-            <Button onClick={onClose} color="inherit">Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={formik.isSubmitting}>
+          <Stack direction="row"
+            spacing={1}
+            justifyContent="flex-end"
+            mt={3}>
+            <Button onClick={onClose}
+              color="inherit">Cancelar</Button>
+            <Button type="submit"
+              variant="contained"
+              disabled={formik.isSubmitting}>
               {isEdit ? 'Guardar' : 'Crear empresa'}
             </Button>
           </Stack>
