@@ -85,7 +85,9 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
         onSaved();
         onClose();
       } catch (err) {
-        helpers.setStatus(err.response?.data?.message ?? 'Error al guardar');
+        helpers.setStatus(err.response?.data?.error ?
+          `${'Error al guardar: ' + err.response?.data?.error}` :
+          'Error al guardar');
       }
     },
   });
@@ -118,9 +120,11 @@ export const TenantFormModal = ({ open, onClose, onSaved, company }) => {
               name="name"
               value={formik.values.name}
               onChange={(e) => {
+                const newName = e.target.value;
+                const expectedPreviousSlug = autoSlug(formik.values.name || '');
                 formik.handleChange(e);
-                if (!isEdit && !formik.touched.slug) {
-                  formik.setFieldValue('slug', autoSlug(e.target.value));
+                if (!isEdit && (formik.values.slug === expectedPreviousSlug || !formik.values.slug)) {
+                  formik.setFieldValue('slug', autoSlug(newName));
                 }
               }}
               onBlur={formik.handleBlur}
