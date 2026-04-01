@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
+import { SuperAdminGuard } from 'src/guards/super-admin-guard';
 import {
   Box,
   Button,
@@ -103,6 +104,12 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page) => (
+  <DashboardLayout>
+    <SuperAdminGuard>
+      {page}
+    </SuperAdminGuard>
+  </DashboardLayout>
+);
 
 export default Page;
