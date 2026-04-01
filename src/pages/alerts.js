@@ -52,7 +52,7 @@ const Page = () => {
       await fetchData();
       setSnackbar({ open: true, message: 'Entrada registrada', severity: 'success' });
     } catch (err) {
-      const message = err.response?.data?.message || 'Error al registrar entrada';
+      const message = err.response?.data?.error || err.response?.data?.message || 'Error al registrar entrada';
       setSnackbar({ open: true, message, severity: 'error' });
     }
   }, [fetchData]);
@@ -64,14 +64,17 @@ const Page = () => {
       <Head>
         <title>Alertas de Stock | Ward</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box component="main"
+sx={{ flexGrow: 1, py: 8 }}>
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">{t('stockAlerts')}</Typography>
             {loading ? (
-              <TableSkeleton rowCount={8} colCount={6} />
+              <TableSkeleton rowCount={8}
+colCount={6} />
             ) : (
-              <AlertsTable items={alerts} onRegisterEntry={handleRegisterEntry} />
+              <AlertsTable items={alerts}
+onRegisterEntry={handleRegisterEntry} />
             )}
           </Stack>
         </Container>
@@ -92,7 +95,8 @@ const Page = () => {
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       >
-        <Alert severity={snackbar.severity} variant="filled">
+        <Alert severity={snackbar.severity}
+variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

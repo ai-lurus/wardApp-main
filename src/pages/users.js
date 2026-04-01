@@ -116,7 +116,7 @@ const Page = () => {
       setEditingUser(null);
       await fetchUsers();
     } catch (err) {
-      const message = err.response?.data?.error || 'Error al guardar usuario';
+      const message = err.response?.data?.message || err.response?.data?.error || 'Error al guardar usuario';
       setSnackbar({ open: true, message, severity: 'error' });
     }
   }, [editingUser, fetchUsers]);
@@ -141,10 +141,13 @@ const Page = () => {
       <Head>
         <title>Usuarios | Ward</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box component="main"
+sx={{ flexGrow: 1, py: 8 }}>
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack direction="row"
+justifyContent="space-between"
+spacing={4}>
               <Typography variant="h4">Usuarios</Typography>
               <Button
                 startIcon={
@@ -175,7 +178,8 @@ const Page = () => {
               }}
             />
             {loading ? (
-              <TableSkeleton rowCount={8} colCount={5} />
+              <TableSkeleton rowCount={8}
+colCount={5} />
             ) : (
               <UsersTable
                 count={filteredUsers.length}
@@ -203,7 +207,8 @@ const Page = () => {
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       >
-        <Alert severity={snackbar.severity} variant="filled">
+        <Alert severity={snackbar.severity}
+variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

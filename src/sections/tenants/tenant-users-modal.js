@@ -80,24 +80,31 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
         setShowForm(false);
         loadUsers();
       } catch (err) {
-        helpers.setStatus(err.response?.data?.message ?? 'Error al crear usuario');
+        helpers.setStatus(err.response?.data?.error ?
+          `${'Error al crear el usuario: ' + err.response?.data?.error}` :
+          'Error al crear el usuario');
       }
     },
   });
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open}
+onClose={onClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6" mb={0.5}>
+        <Typography variant="h6"
+mb={0.5}>
           Usuarios — {company?.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary" mb={2}>
+        <Typography variant="body2"
+color="text.secondary"
+mb={2}>
           {company?.slug}
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
         {loading ? (
-          <Typography variant="body2" color="text.secondary">Cargando...</Typography>
+          <Typography variant="body2"
+color="text.secondary">Cargando...</Typography>
         ) : (
           <Table size="small">
             <TableHead>
@@ -116,8 +123,10 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
                         {getInitials(u.name)}
                       </Avatar>
                       <Box>
-                        <Typography variant="body2" fontWeight={600}>{u.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{u.email}</Typography>
+                        <Typography variant="body2"
+fontWeight={600}>{u.name}</Typography>
+                        <Typography variant="caption"
+color="text.secondary">{u.email}</Typography>
                       </Box>
                     </Box>
                   </TableCell>
@@ -135,8 +144,11 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
               ))}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} align="center">
-                    <Typography variant="body2" color="text.secondary" py={1}>
+                  <TableCell colSpan={3}
+align="center">
+                    <Typography variant="body2"
+color="text.secondary"
+py={1}>
                       Sin usuarios
                     </Typography>
                   </TableCell>
@@ -148,7 +160,9 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
 
         <Box mt={2}>
           {!showForm ? (
-            <Button size="small" variant="outlined" onClick={() => setShowForm(true)}>
+            <Button size="small"
+variant="outlined"
+onClick={() => setShowForm(true)}>
               + Agregar usuario
             </Button>
           ) : (
@@ -158,36 +172,65 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
                 <Stack spacing={1.5}>
                   {formik.status && <Alert severity="error">{formik.status}</Alert>}
                   <TextField
-                    fullWidth size="small" label="Nombre" name="name"
-                    value={formik.values.name} onChange={formik.handleChange} onBlur={formik.handleBlur}
+                    fullWidth
+size="small"
+label="Nombre"
+name="name"
+                    value={formik.values.name}
+onChange={formik.handleChange}
+onBlur={formik.handleBlur}
                     error={formik.touched.name && !!formik.errors.name}
                     helperText={formik.touched.name && formik.errors.name}
                   />
                   <TextField
-                    fullWidth size="small" label="Email" name="email" type="email"
-                    value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur}
+                    fullWidth
+size="small"
+label="Email"
+name="email"
+type="email"
+                    value={formik.values.email}
+onChange={formik.handleChange}
+onBlur={formik.handleBlur}
                     error={formik.touched.email && !!formik.errors.email}
                     helperText={formik.touched.email && formik.errors.email}
                   />
                   <TextField
-                    fullWidth size="small" label="Contraseña" name="password" type="password"
-                    value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur}
+                    fullWidth
+size="small"
+label="Contraseña"
+name="password"
+type="password"
+                    value={formik.values.password}
+onChange={formik.handleChange}
+onBlur={formik.handleBlur}
                     error={formik.touched.password && !!formik.errors.password}
                     helperText={formik.touched.password && formik.errors.password}
                   />
                   <TextField
-                    fullWidth size="small" label="Rol" name="role"
-                    select SelectProps={{ native: true }}
-                    value={formik.values.role} onChange={formik.handleChange}
+                    fullWidth
+size="small"
+label="Rol"
+name="role"
+                    select
+SelectProps={{ native: true }}
+                    value={formik.values.role}
+onChange={formik.handleChange}
                   >
                     <option value="admin">Admin</option>
                     <option value="operator">Operador</option>
                   </TextField>
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button size="small" onClick={() => { setShowForm(false); formik.resetForm(); }} color="inherit">
+                  <Stack direction="row"
+spacing={1}
+justifyContent="flex-end">
+                    <Button size="small"
+onClick={() => { setShowForm(false); formik.resetForm(); }}
+color="inherit">
                       Cancelar
                     </Button>
-                    <Button size="small" type="submit" variant="contained" disabled={formik.isSubmitting}>
+                    <Button size="small"
+type="submit"
+variant="contained"
+disabled={formik.isSubmitting}>
                       Crear
                     </Button>
                   </Stack>
@@ -197,8 +240,11 @@ export const TenantUsersModal = ({ open, onClose, company }) => {
           )}
         </Box>
 
-        <Stack direction="row" justifyContent="flex-end" mt={2}>
-          <Button onClick={onClose} color="inherit">Cerrar</Button>
+        <Stack direction="row"
+justifyContent="flex-end"
+mt={2}>
+          <Button onClick={onClose}
+color="inherit">Cerrar</Button>
         </Stack>
       </Box>
     </Modal>

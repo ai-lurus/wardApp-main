@@ -115,7 +115,7 @@ const Page = () => {
         await fetchData();
         setSnackbar({ open: true, message: 'Material guardado', severity: 'success' });
       } catch (err) {
-        const message = err.response?.data?.message || 'Error al guardar material';
+        const message = err.response?.data?.error || err.response?.data?.message || 'Error al guardar material';
         setSnackbar({ open: true, message, severity: 'error' });
       }
     },
@@ -140,10 +140,13 @@ const Page = () => {
       <Head>
         <title>Materiales | Ward</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box component="main"
+sx={{ flexGrow: 1, py: 8 }}>
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack direction="row"
+justifyContent="space-between"
+spacing={4}>
               <Typography variant="h4">{t('materials')}</Typography>
               <Button
                 startIcon={
@@ -171,7 +174,8 @@ const Page = () => {
               onShowInactiveChange={setShowInactive}
             />
             {loading ? (
-              <TableSkeleton rowCount={10} colCount={7} />
+              <TableSkeleton rowCount={10}
+colCount={7} />
             ) : (
               <MaterialsTable
                 count={filteredMaterials.length}
@@ -200,7 +204,8 @@ const Page = () => {
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       >
-        <Alert severity={snackbar.severity} variant="filled">
+        <Alert severity={snackbar.severity}
+variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

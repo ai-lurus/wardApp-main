@@ -44,14 +44,18 @@ export const AccountProfileDetails = () => {
       setSuccess(true);
       setValues({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      setError(err.response?.data?.message ?? 'Error al cambiar la contraseña');
+      setError(err.response?.data?.error ?
+        `${'Error al guardar la contraseña: ' + err.response?.data?.error}` :
+        'Error al guardar la contraseña');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form autoComplete="off" noValidate onSubmit={handleSubmit}>
+    <form autoComplete="off"
+noValidate
+onSubmit={handleSubmit}>
       <Card>
         <CardHeader
           title="Cambiar contraseña"
@@ -94,7 +98,9 @@ export const AccountProfileDetails = () => {
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained" type="submit" disabled={loading}>
+          <Button variant="contained"
+type="submit"
+disabled={loading}>
             {loading ? 'Guardando...' : 'Cambiar contraseña'}
           </Button>
         </CardActions>
