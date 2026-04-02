@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { config } from '../config/env.config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = config.apiBaseUrl;
 
 // Axios instance with interceptors
 const api = axios.create({
