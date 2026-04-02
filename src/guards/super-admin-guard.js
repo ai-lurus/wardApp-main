@@ -3,20 +3,16 @@ import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import { useAuthContext } from 'src/contexts/auth-context';
 
-export const AuthGuard = (props) => {
+export const SuperAdminGuard = (props) => {
   const { children } = props;
   const router = useRouter();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, user, isLoading } = useAuthContext();
   const ignore = useRef(false);
   const [checked, setChecked] = useState(false);
 
-  // Only do authentication check on component mount.
-  // This flow allows you to manually redirect the user after sign-out, otherwise this will be
-  // triggered and will automatically redirect to sign-in page.
-
   useEffect(
     () => {
-      if (!router.isReady) {
+      if (!router.isReady || isLoading) {
         return;
       }
 
@@ -34,11 +30,16 @@ export const AuthGuard = (props) => {
             query: router.asPath !== '/' ? { continueUrl: router.asPath } : undefined
           })
           .catch(console.error);
+      } else if (user?.role !== 'super_admin') {
+        // User is not a super_admin, redirecting to home.
+        router
+          .replace('/')
+          .catch(console.error);
       } else {
         setChecked(true);
       }
     },
-    [router.isReady]
+    [router.isReady, isAuthenticated, user, isLoading, router]
   );
 
   if (!checked) {
@@ -51,6 +52,6 @@ export const AuthGuard = (props) => {
   return children;
 };
 
-AuthGuard.propTypes = {
+SuperAdminGuard.propTypes = {
   children: PropTypes.node
 };
