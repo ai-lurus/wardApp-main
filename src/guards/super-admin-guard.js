@@ -31,7 +31,7 @@ export const SuperAdminGuard = (props) => {
           })
           .catch(console.error);
       } else if (user?.role !== 'super_admin') {
-        console.log('User is not a super_admin, redirecting to home');
+        // User is not a super_admin, redirecting to home.
         router
           .replace('/')
           .catch(console.error);
