@@ -24,7 +24,6 @@ export const SuperAdminGuard = (props) => {
       ignore.current = true;
 
       if (!isAuthenticated) {
-        console.log('Not authenticated in SuperAdminGuard, redirecting to login');
         router
           .replace({
             pathname: '/auth/login',
