@@ -113,7 +113,7 @@ const Page = () => {
           severity: 'success',
         });
       } catch (err) {
-        const message = err.response?.data?.message || 'Error al registrar movimiento';
+        const message = err.response?.data?.error || err.response?.data?.message || 'Error al registrar movimiento';
         setSnackbar({ open: true, message, severity: 'error' });
       }
     },
@@ -127,12 +127,16 @@ const Page = () => {
       <Head>
         <title>Movimientos | Ward</title>
       </Head>
-      <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
+      <Box component="main"
+sx={{ flexGrow: 1, py: 8 }}>
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack direction="row"
+justifyContent="space-between"
+spacing={4}>
               <Typography variant="h4">{t('movements')}</Typography>
-              <Stack direction="row" spacing={2}>
+              <Stack direction="row"
+spacing={2}>
                 <Button
                   startIcon={
                     <SvgIcon fontSize="small">
@@ -160,7 +164,9 @@ const Page = () => {
               </Stack>
             </Stack>
             <Card sx={{ p: 2 }}>
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row"
+spacing={2}
+alignItems="center">
                 <TextField
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
@@ -168,7 +174,8 @@ const Page = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SvgIcon color="action" fontSize="small">
+                        <SvgIcon color="action"
+fontSize="small">
                           <MagnifyingGlassIcon />
                         </SvgIcon>
                       </InputAdornment>
@@ -192,7 +199,8 @@ const Page = () => {
               </Stack>
             </Card>
             {loading ? (
-              <TableSkeleton rowCount={8} colCount={5} />
+              <TableSkeleton rowCount={8}
+colCount={5} />
             ) : (
               <MovementsTable
                 count={filteredMovements.length}
@@ -218,7 +226,8 @@ const Page = () => {
         autoHideDuration={3000}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       >
-        <Alert severity={snackbar.severity} variant="filled">
+        <Alert severity={snackbar.severity}
+variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

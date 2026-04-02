@@ -44,7 +44,9 @@ const Page = () => {
         await authApi.resetPassword(token, values.newPassword);
         setDone(true);
       } catch (err) {
-        helpers.setStatus(err.response?.data?.message ?? 'El enlace es inválido o ha expirado.');
+        helpers.setStatus(err.response?.data?.error ?
+          `${'Error al guardar la contraseña: ' + err.response?.data?.error}` :
+          'Error al guardar la contraseña.');
       }
     },
   });
@@ -64,16 +66,19 @@ const Page = () => {
         }}
       >
         <Box sx={{ maxWidth: 480, px: 3, py: { xs: 6, sm: 10 }, width: '100%' }}>
-          <Stack spacing={1} sx={{ mb: 3 }}>
+          <Stack spacing={1}
+sx={{ mb: 3 }}>
             <Typography variant="h4">Nueva contraseña</Typography>
-            <Typography color="text.secondary" variant="body2">
+            <Typography color="text.secondary"
+variant="body2">
               Ingresa tu nueva contraseña para completar el restablecimiento.
             </Typography>
           </Stack>
 
           {done ? (
             <>
-              <Alert severity="success" sx={{ mb: 3 }}>
+              <Alert severity="success"
+sx={{ mb: 3 }}>
                 Tu contraseña fue actualizada correctamente.
               </Alert>
               <Button
@@ -87,7 +92,8 @@ const Page = () => {
               </Button>
             </>
           ) : (
-            <form noValidate onSubmit={formik.handleSubmit}>
+            <form noValidate
+onSubmit={formik.handleSubmit}>
               <Stack spacing={3}>
                 {formik.status && <Alert severity="error">{formik.status}</Alert>}
                 <TextField
@@ -136,7 +142,8 @@ const Page = () => {
                 type="submit"
                 variant="contained"
                 disabled={formik.isSubmitting}
-                startIcon={formik.isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
+                startIcon={formik.isSubmitting ? <CircularProgress size={18}
+color="inherit" /> : null}
               >
                 {formik.isSubmitting ? 'Guardando...' : 'Guardar contraseña'}
               </Button>
