@@ -124,11 +124,17 @@ export const AuthProvider = (props) => {
     }
   };
 
-  const signOut = () => {
-    window.sessionStorage.removeItem('token');
-    dispatch({
-      type: HANDLERS.SIGN_OUT
-    });
+  const signOut = async () => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error('Logout failed:', err);
+    } finally {
+      window.sessionStorage.removeItem('token');
+      dispatch({
+        type: HANDLERS.SIGN_OUT
+      });
+    }
   };
 
   return (
