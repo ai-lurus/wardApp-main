@@ -406,6 +406,162 @@ export const billingApi = {
     api.post('/billing/create-portal-session', { returnUrl }).then((r) => r.data),
 };
 
+// ─── Warden ────────────────────────────────────────────
+//
+// Thin fetch wrappers for every endpoint in
+// specs/001-warden-foundations/contracts/warden-api.md, plus a
+// `streamMessages()` helper for POST /api/warden/messages that returns an
+// async iterator of parsed SSE events defined in warden-sse.md.
+//
+// The standard axios instance is used for plain JSON endpoints. The
+// streaming endpoint bypasses axios entirely because axios in the browser
+// does not expose a ReadableStream — we use native `fetch()` so we can
+// read tokens as they arrive.
+
+const normalizeWardenConversationListItem = (c) => ({
+  id: c.id,
+  title: c.title,
+  preview: c.preview ?? '',
+  updatedAt: c.updatedAt
+});
+
+const normalizeWardenMessage = (m) => ({
+  id: m.id,
+  role: m.role,
+  content: m.content,
+  createdAt: m.createdAt,
+  status: m.status,
+  cards: Array.isArray(m.cards) ? m.cards : []
+});
+
+const normalizeWardenConversation = (c) => ({
+  id: c.id,
+  title: c.title,
+  createdAt: c.createdAt,
+  updatedAt: c.updatedAt,
+  messages: Array.isArray(c.messages) ? c.messages.map(normalizeWardenMessage) : []
+});
+
+// Parse one SSE frame ("event: X\ndata: Y") into { event, data }. Skips
+// keep-alive lines and comments. Returns null if the frame is malformed.
+const parseSseFrame = (raw) => {
+  const lines = raw.split('\n');
+  let eventName = 'message';
+  const dataLines = [];
+  for (const line of lines) {
+    if (!line || line.startsWith(':')) continue;
+    if (line.startsWith('event:')) {
+      eventName = line.slice(6).trim();
+    } else if (line.startsWith('data:')) {
+      dataLines.push(line.slice(5).trim());
+    }
+  }
+  if (dataLines.length === 0) return null;
+  const dataRaw = dataLines.join('\n');
+  try {
+    return { event: eventName, data: JSON.parse(dataRaw) };
+  } catch {
+    return { event: eventName, data: dataRaw };
+  }
+};
+
+// Stream `POST /api/warden/messages` as parsed SSE events.
+//
+// Usage:
+//   for await (const ev of wardenApi.streamMessages({ text: '...' }, { signal })) {
+//     switch (ev.event) { case 'token': ... }
+//   }
+//
+// The caller owns abort via AbortController — passing its `signal` cancels
+// the underlying fetch, the backend then finalizes the message as `partial`
+// (warden-sse.md). The iterator terminates cleanly on abort or on the
+// natural end of the stream.
+async function* streamMessagesIterator(body, { signal } = {}) {
+  const token = window.sessionStorage.getItem('token');
+  const res = await fetch(`${API_BASE_URL}/warden/messages`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify(body),
+    signal
+  });
+
+  if (!res.ok || !res.body) {
+    // Non-SSE error — the server returned a JSON envelope per
+    // warden-api.md §Errors. Surface it as a thrown error so the caller
+    // can route it through the same error-handling code path.
+    let payload;
+    try {
+      payload = await res.json();
+    } catch {
+      payload = { error: { code: 'WARDEN_INTERNAL', message: 'Error desconocido.' } };
+    }
+    const err = new Error(payload?.error?.message ?? 'Error desconocido.');
+    err.code = payload?.error?.code ?? 'WARDEN_INTERNAL';
+    err.status = res.status;
+    throw err;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // SSE frames are separated by a blank line ("\n\n").
+      let boundary = buffer.indexOf('\n\n');
+      while (boundary !== -1) {
+        const rawFrame = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const frame = parseSseFrame(rawFrame);
+        if (frame) yield frame;
+        boundary = buffer.indexOf('\n\n');
+      }
+    }
+  } finally {
+    try {
+      reader.releaseLock();
+    } catch {
+      // Lock may already be released if the stream errored — safe to ignore.
+    }
+  }
+}
+
+export const wardenApi = {
+  listConversations: (params = {}) =>
+    api.get('/warden/conversations', { params }).then((r) => ({
+      items: (r.data.items ?? []).map(normalizeWardenConversationListItem),
+      nextCursor: r.data.nextCursor ?? null
+    })),
+
+  getConversation: (id) =>
+    api.get(`/warden/conversations/${id}`).then((r) => normalizeWardenConversation(r.data)),
+
+  createConversation: (title) =>
+    api
+      .post('/warden/conversations', { title })
+      .then((r) => normalizeWardenConversation(r.data)),
+
+  deleteConversation: (id) =>
+    api.delete(`/warden/conversations/${id}`).then((r) => r.data),
+
+  listTools: () =>
+    api.get('/warden/tools').then((r) => ({
+      tools: Array.isArray(r.data.tools) ? r.data.tools : []
+    })),
+
+  // Returns an async iterator of { event, data } frames. Caller must use
+  // `for await` and should provide an AbortController signal for cancel.
+  streamMessages: (body, options = {}) => streamMessagesIterator(body, options)
+};
+
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
 
 export const fetchTransportData = async () => [];
