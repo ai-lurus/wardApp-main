@@ -7,6 +7,7 @@ const API_BASE_URL = config.apiBaseUrl;
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 // Attach JWT token to every request
@@ -18,15 +19,61 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 responses globally (token expired/invalid)
-// Exclude the login endpoint — a 401 there means wrong credentials, not expired token
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Handle 401 responses globally
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const isLoginRequest = error.config?.url?.includes('/auth/login');
-    if (error.response?.status === 401 && !isLoginRequest) {
-      window.sessionStorage.removeItem('token');
-      window.location.href = '/auth/login';
+  async (error) => {
+    const originalRequest = error.config;
+    const isLoginRequest = originalRequest?.url?.includes('/auth/login');
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !isLoginRequest && !isRefreshRequest && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          return api(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await api.post('/auth/refresh');
+        const newToken = data.token;
+        window.sessionStorage.setItem('token', newToken);
+        api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+        originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
+        
+        processQueue(null, newToken);
+        isRefreshing = false;
+        
+        return api(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+        isRefreshing = false;
+        window.sessionStorage.removeItem('token');
+        window.location.href = '/auth/login';
+        return Promise.reject(err);
+      }
     }
     return Promise.reject(error);
   }
@@ -168,6 +215,9 @@ export const authApi = {
 
   resetPassword: (token, newPassword) =>
     api.post('/auth/reset-password', { token, newPassword }).then((r) => r.data),
+
+  logout: () =>
+    api.post('/auth/logout').then((r) => r.data),
 };
 
 // ─── Materials ─────────────────────────────────────────

@@ -26,3 +26,10 @@ out
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+# Ignorar datos persistentes de Docker que vivan en carpetas padres o locales
+postgres_data/
+
+# Docker Infrastructure (Exclusion requested)
+Dockerfile
+.dockerignore
+docker-compose.yml
