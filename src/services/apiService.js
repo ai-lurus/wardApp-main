@@ -88,6 +88,24 @@ const normalizeAlert = (m) => ({
   deficit: m.deficit ?? (m.min_stock - m.current_stock),
 });
 
+const normalizeUnit = (u) => ({
+  id: u.id,
+  matricula: u.plate || '',
+  marca: u.brand || '',
+  modelo: u.model || '',
+  year: u.year || '',
+  type: u.type || '',
+  axesNumber: u.axles || '',
+  vin: u.vin || '',
+  fuelEfficiency: u.fuel_efficiency_km_l || '',
+  insuranceExpiration: u.insurance_expiry || '',
+  lastMaintenance: u.last_maintenance_date || '',
+  notes: u.notes || '',
+  status: u.status || 'disponible',
+  active: u.active ?? true,
+  createdAt: u.created_at || u.createdAt,
+});
+
 // Convert camelCase form values to snake_case for backend
 const toMaterialPayload = (values) => ({
   name: values.name,
@@ -116,6 +134,21 @@ const toExitPayload = (values) => ({
   destination: values.destination || undefined,
   reason: values.reason || undefined,
   notes: values.notes || undefined,
+});
+
+const toUnitPayload = (values) => ({
+  plate: values.matricula,
+  brand: values.marca || undefined,
+  model: values.modelo || undefined,
+  year: values.year ? Number(values.year) : undefined,
+  type: values.type || undefined,
+  axles: values.axesNumber ? Number(values.axesNumber) : undefined,
+  vin: values.vin || undefined,
+  fuel_efficiency_km_l: values.fuelEfficiency ? Number(values.fuelEfficiency) : undefined,
+  insurance_expiry: values.insuranceExpiration || undefined,
+  last_maintenance_date: values.lastMaintenance || undefined,
+  notes: values.notes || undefined,
+  status: values.status || undefined,
 });
 
 // ─── Auth ──────────────────────────────────────────────
@@ -165,6 +198,33 @@ export const materialsApi = {
 
   delete: (id) =>
     api.delete(`/materials/${id}`).then((r) => r.data),
+};
+
+// ─── Units ─────────────────────────────────────────────
+
+export const unitsApi = {
+  list: (params = {}) =>
+    api.get('/units', { params }).then((r) => ({
+      items: r.data.items ? r.data.items.map(normalizeUnit) : r.data.map(normalizeUnit),
+      count: r.data.count,
+      page: r.data.page,
+      limit: r.data.limit,
+    })),
+
+  get: (id) =>
+    api.get(`/units/${id}`).then((r) => normalizeUnit(r.data)),
+
+  create: (values) =>
+    api.post('/units', toUnitPayload(values)).then((r) => normalizeUnit(r.data)),
+
+  update: (id, values) =>
+    api.put(`/units/${id}`, toUnitPayload(values)).then((r) => normalizeUnit(r.data)),
+
+  updateStatus: (id, status) =>
+    api.patch(`/units/${id}/status`, { status }).then((r) => normalizeUnit(r.data)),
+
+  getAlertsInsurance: () =>
+    api.get('/units/alerts/insurance').then((r) => r.data.map(normalizeUnit)),
 };
 
 // ─── Categories ────────────────────────────────────────
