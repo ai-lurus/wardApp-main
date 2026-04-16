@@ -122,7 +122,7 @@ export const items = [
   },
   {
     title: 'Flotas',
-    comingSoon: true,
+    path: '/units',
     allowedRoles: ['admin'],
     moduleId: 'flotas',
     icon: (
