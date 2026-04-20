@@ -153,6 +153,40 @@ const normalizeUnit = (u) => ({
   createdAt: u.created_at || u.createdAt,
 });
 
+const normalizeTollbooth = (t) => ({
+  id: t.id,
+  name: t.name,
+  cost2Axles: t.cost_2_axles ?? 0,
+  cost3Axles: t.cost_3_axles ?? 0,
+  cost4Axles: t.cost_4_axles ?? 0,
+  cost5Axles: t.cost_5_axles ?? 0,
+  cost6Axles: t.cost_6_axles ?? 0,
+  cost7PlusAxles: t.cost_7_plus_axles ?? 0,
+  active: t.active,
+});
+
+const normalizeRoute = (r) => ({
+  id: r.id,
+  name: r.name,
+  origin: r.origin,
+  destination: r.destination,
+  distanceKm: r.distance_km,
+  estimatedDurationMin: r.estimated_duration_min,
+  active: r.active,
+  tollbooths: r.tollbooths ? r.tollbooths.map(tb => ({
+    id: tb.id,
+    name: tb.name,
+    order: tb.order,
+    // Detailed fields if present
+    cost2Axles: tb.cost_2_axles,
+    cost3Axles: tb.cost_3_axles,
+    cost4Axles: tb.cost_4_axles,
+    cost5Axles: tb.cost_5_axles,
+    cost6Axles: tb.cost_6_axles,
+    cost7PlusAxles: tb.cost_7_plus_axles,
+  })) : [],
+});
+
 // Convert camelCase form values to snake_case for backend
 const toMaterialPayload = (values) => ({
   name: values.name,
@@ -196,6 +230,30 @@ const toUnitPayload = (values) => ({
   last_maintenance_date: values.lastMaintenance || undefined,
   notes: values.notes || undefined,
   status: values.status || undefined,
+});
+
+const toTollboothPayload = (values) => ({
+  name: values.name,
+  cost_2_axles: Number(values.cost2Axles),
+  cost_3_axles: Number(values.cost3Axles),
+  cost_4_axles: Number(values.cost4Axles),
+  cost_5_axles: Number(values.cost5Axles),
+  cost_6_axles: Number(values.cost6Axles),
+  cost_7_plus_axles: Number(values.cost7PlusAxles),
+  active: values.active,
+});
+
+const toRoutePayload = (values) => ({
+  name: values.name,
+  origin: values.origin,
+  destination: values.destination,
+  distance_km: Number(values.distanceKm),
+  estimated_duration_min: Number(values.estimatedDurationMin),
+  active: values.active,
+  tollbooths: values.tollbooths ? values.tollbooths.map(tb => ({
+    id: tb.id,
+    order: tb.order
+  })) : []
 });
 
 // ─── Auth ──────────────────────────────────────────────
@@ -620,6 +678,47 @@ export const wardenApi = {
   // Returns an async iterator of { event, data } frames. Caller must use
   // `for await` and should provide an AbortController signal for cancel.
   streamMessages: (body, options = {}) => streamMessagesIterator(body, options)
+};
+
+// ─── Routes ────────────────────────────────────────────
+
+export const routesApi = {
+  list: (params = {}) =>
+    api.get('/routes', { params }).then((r) => r.data.map(normalizeRoute)),
+
+  get: (id) =>
+    api.get(`/routes/${id}`).then((r) => normalizeRoute(r.data)),
+
+  create: (values) =>
+    api.post('/routes', toRoutePayload(values)).then((r) => normalizeRoute(r.data)),
+
+  update: (id, values) =>
+    api.put(`/routes/${id}`, toRoutePayload(values)).then((r) => normalizeRoute(r.data)),
+
+  delete: (id) =>
+    api.delete(`/routes/${id}`).then((r) => r.data),
+
+  getCostPreview: (id, axles) =>
+    api.get(`/routes/${id}/cost-preview`, { params: { axles } }).then((r) => r.data),
+};
+
+// ─── Tollbooths ────────────────────────────────────────
+
+export const tollboothsApi = {
+  list: (params = {}) =>
+    api.get('/tollbooths', { params }).then((r) => r.data.map(normalizeTollbooth)),
+
+  get: (id) =>
+    api.get(`/tollbooths/${id}`).then((r) => normalizeTollbooth(r.data)),
+
+  create: (values) =>
+    api.post('/tollbooths', toTollboothPayload(values)).then((r) => normalizeTollbooth(r.data)),
+
+  update: (id, values) =>
+    api.put(`/tollbooths/${id}`, toTollboothPayload(values)).then((r) => normalizeTollbooth(r.data)),
+
+  delete: (id) =>
+    api.delete(`/tollbooths/${id}`).then((r) => r.data),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
