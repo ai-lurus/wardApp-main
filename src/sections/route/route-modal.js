@@ -12,7 +12,8 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  Autocomplete
+  Autocomplete,
+  Alert
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -33,7 +34,7 @@ const modalStyle = {
   p: 4,
 };
 
-export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [] }) => {
+export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], serverError }) => {
   const isEdit = Boolean(route);
 
   const formik = useFormik({
@@ -98,6 +99,13 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [] })
         <Typography variant="h6" mb={3}>
           {isEdit ? 'Editar Ruta' : 'Nueva Ruta'}
         </Typography>
+
+        {serverError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {serverError}
+          </Alert>
+        )}
+
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={3}>
             <Stack direction="row" spacing={2}>

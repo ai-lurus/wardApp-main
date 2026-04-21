@@ -15,22 +15,23 @@ import {
   SvgIcon
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
-import { SeverityPill } from 'src/components/severity-pill';
 import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
 import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 import EyeIcon from '@heroicons/react/24/solid/EyeIcon';
 import BanknotesIcon from '@heroicons/react/24/solid/BanknotesIcon';
+import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 
 export const RoutesTable = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
-    onRowsPerPageChange,
     onEdit,
     onDelete,
+    onActivate,
     onViewDetail,
     onPreviewCost,
+    onPageChange = () => {},
+    onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
   } = props;
@@ -87,11 +88,19 @@ export const RoutesTable = (props) => {
                           <SvgIcon fontSize="small"><PencilIcon /></SvgIcon>
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Eliminar">
-                        <IconButton onClick={() => onDelete(route.id)} color="error">
-                          <SvgIcon fontSize="small"><TrashIcon /></SvgIcon>
-                        </IconButton>
-                      </Tooltip>
+                      {route.active ? (
+                        <Tooltip title="Desactivar">
+                          <IconButton onClick={() => onDelete(route.id)} color="error">
+                            <SvgIcon fontSize="small"><TrashIcon /></SvgIcon>
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Reactivar">
+                          <IconButton onClick={() => onActivate(route.id)} color="success">
+                            <SvgIcon fontSize="small"><ArrowPathIcon /></SvgIcon>
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -116,12 +125,13 @@ export const RoutesTable = (props) => {
 RoutesTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
-  onPageChange: PropTypes.func,
-  onRowsPerPageChange: PropTypes.func,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
+  onActivate: PropTypes.func,
   onViewDetail: PropTypes.func,
   onPreviewCost: PropTypes.func,
+  onPageChange: PropTypes.func,
+  onRowsPerPageChange: PropTypes.func,
   page: PropTypes.number,
-  rowsPerPage: PropTypes.number,
+  rowsPerPage: PropTypes.number
 };

@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Modal, Stack, TextField, Typography, Alert } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -14,7 +14,7 @@ const modalStyle = {
   p: 4,
 };
 
-export const TollboothModal = ({ open, onClose, onSave, tollbooth }) => {
+export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }) => {
   const isEdit = Boolean(tollbooth);
 
   const formik = useFormik({
@@ -54,6 +54,13 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth }) => {
         <Typography variant="h6" mb={3}>
           {isEdit ? 'Editar Caseta' : 'Nueva Caseta'}
         </Typography>
+
+        {serverError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {serverError}
+          </Alert>
+        )}
+
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={2}>
             <TextField

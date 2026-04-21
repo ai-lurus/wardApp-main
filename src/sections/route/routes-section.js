@@ -6,15 +6,21 @@ import { RoutesSearch } from './routes-search';
 import { RouteModal } from './route-modal';
 import { RouteDetails } from './route-details';
 import { CostPreviewModal } from './cost-preview-modal';
-import { routesApi } from 'src/services/apiService';
+import { ConfirmActionModal } from 'src/components/confirm-action-modal';
+import { routesApi, tollboothsApi } from 'src/services/apiService';
 
-export const RoutesSection = ({ allTollbooths }) => {
+export const RoutesSection = () => {
   const [routes, setRoutes] = useState([]);
   const [routeFilters, setRouteFilters] = useState({ origin: '', destination: '', active: undefined });
   const [routeSearch, setRouteSearch] = useState('');
   const [routeModal, setRouteModal] = useState({ open: false, data: null });
+  const [routeError, setRouteError] = useState('');
   const [routeDetail, setRouteDetail] = useState({ open: false, data: null });
   const [costPreview, setCostPreview] = useState({ open: false, data: null });
+  const [confirmModal, setConfirmModal] = useState({ open: false, id: null, type: 'deactivate' });
+  
+  // Independent list of tollbooths for the modal
+  const [allTollbooths, setAllTollbooths] = useState([]);
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -29,10 +35,20 @@ export const RoutesSection = ({ allTollbooths }) => {
     }
   }, [routeFilters, routeSearch]);
 
+  const fetchAllTollbooths = useCallback(async () => {
+    try {
+      const data = await tollboothsApi.list();
+      setAllTollbooths(data);
+    } catch (err) {
+      console.error('Error fetching all tollbooths for routes:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchRoutes();
+    fetchAllTollbooths();
     setPage(0); // Reset page on filter change
-  }, [fetchRoutes]);
+  }, [fetchRoutes, fetchAllTollbooths]);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -45,7 +61,17 @@ export const RoutesSection = ({ allTollbooths }) => {
 
   const paginatedRoutes = routes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const enrichRoute = useCallback((route) => {
+    if (!route || !route.tollbooths) return route;
+    const enrichedTollbooths = route.tollbooths.map(rtb => {
+      const details = allTollbooths.find(tb => tb.id === rtb.id);
+      return { ...rtb, ...details };
+    });
+    return { ...route, tollbooths: enrichedTollbooths };
+  }, [allTollbooths]);
+
   const handleRouteSave = async (values) => {
+    setRouteError('');
     try {
       if (routeModal.data) {
         await routesApi.update(routeModal.data.id, values);
@@ -56,27 +82,45 @@ export const RoutesSection = ({ allTollbooths }) => {
       fetchRoutes();
     } catch (err) {
       console.error('Error saving route:', err);
+      const message = err.response?.data?.error || err.message || 'Error al guardar la ruta';
+      setRouteError(message);
     }
   };
 
-  const handleRouteDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de desactivar esta ruta?')) {
-      try {
-        await routesApi.delete(id);
-        fetchRoutes();
-      } catch (err) {
-        console.error('Error deleting route:', err);
+  const handleViewDetail = async (route) => {
+    try {
+      const detailedRoute = await routesApi.get(route.id);
+      setRouteDetail({ open: true, data: detailedRoute });
+    } catch (err) {
+      console.error('Error fetching route details:', err);
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmModal.id) return;
+    try {
+      if (confirmModal.type === 'deactivate') {
+        await routesApi.delete(confirmModal.id);
+      } else {
+        await routesApi.update(confirmModal.id, { active: true });
       }
+      setConfirmModal({ open: false, id: null, type: 'deactivate' });
+      fetchRoutes();
+    } catch (err) {
+      console.error(`Error ${confirmModal.type} route:`, err);
     }
   };
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
         <Button
           startIcon={<PlusIcon style={{ width: 20 }} />}
           variant="contained"
-          onClick={() => setRouteModal({ open: true, data: null })}
+          onClick={() => {
+            setRouteError('');
+            setRouteModal({ open: true, data: null });
+          }}
         >
           Nueva Ruta
         </Button>
@@ -94,23 +138,27 @@ export const RoutesSection = ({ allTollbooths }) => {
       <RoutesTable 
         count={routes.length}
         items={paginatedRoutes} 
-        onEdit={(data) => setRouteModal({ open: true, data })}
-        onDelete={handleRouteDelete}
-        onViewDetail={(data) => setRouteDetail({ open: true, data })}
-        onPreviewCost={(data) => setCostPreview({ open: true, data })}
+        onEdit={(data) => {
+          setRouteError('');
+          setRouteModal({ open: true, data });
+        }}
+        onDelete={(id) => setConfirmModal({ open: true, id, type: 'deactivate' })}
+        onActivate={(id) => setConfirmModal({ open: true, id, type: 'activate' })}
+        onViewDetail={handleViewDetail}
+        onPreviewCost={(data) => setCostPreview({ open: true, data: enrichRoute(data) })}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         page={page}
         rowsPerPage={rowsPerPage}
       />
       
-      {/* Modals are now local to RoutesSection */}
       <RouteModal
         open={routeModal.open}
         onClose={() => setRouteModal({ open: false, data: null })}
         onSave={handleRouteSave}
         route={routeModal.data}
         allTollbooths={allTollbooths}
+        serverError={routeError}
       />
       <RouteDetails
         open={routeDetail.open}
@@ -121,6 +169,18 @@ export const RoutesSection = ({ allTollbooths }) => {
         open={costPreview.open}
         onClose={() => setCostPreview({ open: false, data: null })}
         route={costPreview.data}
+      />
+      <ConfirmActionModal
+        open={confirmModal.open}
+        onClose={() => setConfirmModal({ open: false, id: null, type: 'deactivate' })}
+        onConfirm={handleConfirmAction}
+        title={confirmModal.type === 'deactivate' ? "¿Desactivar Ruta?" : "¿Reactivar Ruta?"}
+        description={confirmModal.type === 'deactivate' 
+          ? "Esta acción marcará la ruta como inactiva. Podrás reactivarla despuéssi es necesario."
+          : "Esta acción volverá a activar la ruta para que sea visible en todas las operaciones."}
+        confirmText={confirmModal.type === 'deactivate' ? "Desactivar" : "Reactivar"}
+        color={confirmModal.type === 'deactivate' ? "error" : "success"}
+        iconType={confirmModal.type === 'deactivate' ? "warning" : "info"}
       />
     </Stack>
   );

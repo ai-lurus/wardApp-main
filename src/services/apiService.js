@@ -234,12 +234,12 @@ const toUnitPayload = (values) => ({
 
 const toTollboothPayload = (values) => ({
   name: values.name,
-  cost_2_axles: Number(values.cost2Axles),
-  cost_3_axles: Number(values.cost3Axles),
-  cost_4_axles: Number(values.cost4Axles),
-  cost_5_axles: Number(values.cost5Axles),
-  cost_6_axles: Number(values.cost6Axles),
-  cost_7_plus_axles: Number(values.cost7PlusAxles),
+  cost_2_axles: Number(values.cost2Axles) || undefined,
+  cost_3_axles: Number(values.cost3Axles) || undefined,
+  cost_4_axles: Number(values.cost4Axles) || undefined,
+  cost_5_axles: Number(values.cost5Axles) || undefined,
+  cost_6_axles: Number(values.cost6Axles) || undefined,
+  cost_7_plus_axles: Number(values.cost7PlusAxles) || undefined,
   active: values.active,
 });
 
@@ -247,8 +247,8 @@ const toRoutePayload = (values) => ({
   name: values.name,
   origin: values.origin,
   destination: values.destination,
-  distance_km: Number(values.distanceKm),
-  estimated_duration_min: Number(values.estimatedDurationMin),
+  distance_km: Number(values.distanceKm) || undefined,
+  estimated_duration_min: Number(values.estimatedDurationMin) || undefined,
   active: values.active,
   tollbooths: values.tollbooths ? values.tollbooths.map(tb => ({
     id: tb.id,

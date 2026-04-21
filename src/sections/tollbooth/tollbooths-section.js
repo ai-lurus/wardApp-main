@@ -4,12 +4,15 @@ import PlusIcon from '@heroicons/react/24/solid/PlusIcon';
 import { TollboothsTable } from './tollbooths-table';
 import { TollboothsSearch } from './tollbooths-search';
 import { TollboothModal } from './tollbooth-modal';
+import { ConfirmActionModal } from 'src/components/confirm-action-modal';
 import { tollboothsApi } from 'src/services/apiService';
 
-export const TollboothsSection = ({ onRefreshSharedData }) => {
+export const TollboothsSection = () => {
   const [tollbooths, setTollbooths] = useState([]);
   const [tbSearch, setTbSearch] = useState('');
   const [tbModal, setTbModal] = useState({ open: false, data: null });
+  const [tbError, setTbError] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ open: false, id: null, type: 'deactivate' });
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -19,12 +22,10 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
     try {
       const data = await tollboothsApi.list({ search: tbSearch });
       setTollbooths(data);
-      // Notify parent to update shared list of tollbooths (needed by RouteModal)
-      onRefreshSharedData?.(data);
     } catch (err) {
       console.error('Error fetching tollbooths:', err);
     }
-  }, [tbSearch, onRefreshSharedData]);
+  }, [tbSearch]);
 
   useEffect(() => {
     fetchTollbooths();
@@ -43,6 +44,7 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
   const paginatedTollbooths = tollbooths.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleTbSave = async (values) => {
+    setTbError('');
     try {
       if (tbModal.data) {
         await tollboothsApi.update(tbModal.data.id, values);
@@ -53,17 +55,23 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
       fetchTollbooths();
     } catch (err) {
       console.error('Error saving tollbooth:', err);
+      const message = err.response?.data?.error || err.message || 'Error al guardar la caseta';
+      setTbError(message);
     }
   };
 
-  const handleTbDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de desactivar esta caseta?')) {
-      try {
-        await tollboothsApi.delete(id);
-        fetchTollbooths();
-      } catch (err) {
-        console.error('Error deleting tollbooth:', err);
+  const handleConfirmAction = async () => {
+    if (!confirmModal.id) return;
+    try {
+      if (confirmModal.type === 'deactivate') {
+        await tollboothsApi.delete(confirmModal.id);
+      } else {
+        await tollboothsApi.update(confirmModal.id, { active: true });
       }
+      setConfirmModal({ open: false, id: null, type: 'deactivate' });
+      fetchTollbooths();
+    } catch (err) {
+      console.error(`Error ${confirmModal.type} tollbooth:`, err);
     }
   };
 
@@ -73,7 +81,10 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
         <Button
           startIcon={<PlusIcon style={{ width: 20 }} />}
           variant="contained"
-          onClick={() => setTbModal({ open: true, data: null })}
+          onClick={() => {
+            setTbError('');
+            setTbModal({ open: true, data: null });
+          }}
         >
           Nueva Caseta
         </Button>
@@ -82,8 +93,12 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
       <TollboothsTable 
         count={tollbooths.length}
         items={paginatedTollbooths}
-        onEdit={(data) => setTbModal({ open: true, data })}
-        onDelete={handleTbDelete}
+        onEdit={(data) => {
+          setTbError('');
+          setTbModal({ open: true, data });
+        }}
+        onDelete={(id) => setConfirmModal({ open: true, id, type: 'deactivate' })}
+        onActivate={(id) => setConfirmModal({ open: true, id, type: 'activate' })}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         page={page}
@@ -94,6 +109,19 @@ export const TollboothsSection = ({ onRefreshSharedData }) => {
         onClose={() => setTbModal({ open: false, data: null })}
         onSave={handleTbSave}
         tollbooth={tbModal.data}
+        serverError={tbError}
+      />
+      <ConfirmActionModal
+        open={confirmModal.open}
+        onClose={() => setConfirmModal({ open: false, id: null, type: 'deactivate' })}
+        onConfirm={handleConfirmAction}
+        title={confirmModal.type === 'deactivate' ? "¿Desactivar Caseta?" : "¿Reactivar Caseta?"}
+        description={confirmModal.type === 'deactivate' 
+          ? "Esta acción marcará la caseta como inactiva. Ten en cuenta que esto podría afectar a las rutas que incluyan esta caseta."
+          : "Esta acción volverá a activar la caseta para su uso en rutas."}
+        confirmText={confirmModal.type === 'deactivate' ? "Desactivar" : "Reactivar"}
+        color={confirmModal.type === 'deactivate' ? "error" : "success"}
+        iconType={confirmModal.type === 'deactivate' ? "warning" : "info"}
       />
     </Stack>
   );
