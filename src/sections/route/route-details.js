@@ -32,12 +32,19 @@ export const RouteDetails = ({ open, onClose, route }) => {
 
   const sortedTollbooths = [...(route.tollbooths || [])].sort((a, b) => a.order - b.order);
 
+  const formatDuration = (minutes) => {
+    if (!minutes) return '0m';
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={modalStyle}>
         <Typography variant="h5" mb={1}>{route.name}</Typography>
         <Typography variant="body2" color="text.secondary" mb={3}>
-          {route.origin} → {route.destination} ({route.distanceKm} km)
+          {route.origin} → {route.destination} ({route.distanceKm} km • {formatDuration(route.estimatedDurationMin)})
         </Typography>
 
         <Divider sx={{ mb: 3 }} />

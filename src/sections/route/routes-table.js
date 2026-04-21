@@ -21,6 +21,16 @@ import EyeIcon from '@heroicons/react/24/solid/EyeIcon';
 import BanknotesIcon from '@heroicons/react/24/solid/BanknotesIcon';
 import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 
+const formatDuration = (minutes) => {
+  if (!minutes) return '0m';
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hrs > 0) {
+    return `${hrs}h ${mins}m`;
+  }
+  return `${mins}m`;
+};
+
 export const RoutesTable = (props) => {
   const {
     count = 0,
@@ -46,7 +56,8 @@ export const RoutesTable = (props) => {
                 <TableCell>Nombre</TableCell>
                 <TableCell>Origen</TableCell>
                 <TableCell>Destino</TableCell>
-                <TableCell>Distancia (km)</TableCell>
+                <TableCell>Distancia</TableCell>
+                <TableCell>Duración</TableCell>
                 <TableCell>Casetas</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell align="right">Acciones</TableCell>
@@ -62,7 +73,8 @@ export const RoutesTable = (props) => {
                   </TableCell>
                   <TableCell>{route.origin}</TableCell>
                   <TableCell>{route.destination}</TableCell>
-                  <TableCell>{route.distanceKm}</TableCell>
+                  <TableCell>{route.distanceKm} km</TableCell>
+                  <TableCell>{formatDuration(route.estimatedDurationMin)}</TableCell>
                   <TableCell>{route.tollbooths?.length || 0}</TableCell>
                   <TableCell>
                     {route.active ? (
