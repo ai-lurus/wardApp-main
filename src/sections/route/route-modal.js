@@ -1,12 +1,12 @@
-import { 
-  Box, 
-  Button, 
-  IconButton, 
-  MenuItem, 
-  Modal, 
-  Stack, 
-  TextField, 
-  Typography, 
+import {
+  Box,
+  Button,
+  IconButton,
+  MenuItem,
+  Modal,
+  Stack,
+  TextField,
+  Typography,
   Divider,
   List,
   ListItem,
@@ -43,8 +43,8 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
       name: route?.name || '',
       origin: route?.origin || '',
       destination: route?.destination || '',
-      distanceKm: route?.distanceKm || 0,
-      estimatedDurationMin: route?.estimatedDurationMin || 0,
+      distanceKm: route?.distanceKm ?? 0,
+      estimatedDurationMin: route?.estimatedDurationMin ?? 0,
       active: route?.active ?? true,
       tollbooths: route?.tollbooths ? [...route.tollbooths].sort((a, b) => a.order - b.order) : [],
     },
@@ -52,8 +52,8 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
       name: Yup.string().required('El nombre es requerido'),
       origin: Yup.string().required('El origen es requerido'),
       destination: Yup.string().required('El destino es requerido'),
-      distanceKm: Yup.number().min(0, 'No puede ser negativo').required('Requerido'),
-      estimatedDurationMin: Yup.number().min(0, 'No puede ser negativo').required('Requerido'),
+      distanceKm: Yup.number().min(1, 'No puede ser 0 o negativo').required('Requerido'),
+      estimatedDurationMin: Yup.number().min(1, 'No puede ser 0 o negativo').required('Requerido'),
     }),
     onSubmit: (values) => {
       onSave(values);
@@ -94,21 +94,25 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}
+      onClose={handleClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6" mb={3}>
+        <Typography variant="h6"
+          mb={3}>
           {isEdit ? 'Editar Ruta' : 'Nueva Ruta'}
         </Typography>
 
         {serverError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error"
+            sx={{ mb: 3 }}>
             {serverError}
           </Alert>
         )}
 
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={3}>
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="Nombre de la Ruta"
@@ -121,31 +125,42 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
               />
             </Stack>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="Origen"
                 name="origin"
                 value={formik.values.origin}
+                error={formik.touched.origin && Boolean(formik.errors.origin)}
+                helperText={formik.touched.origin && formik.errors.origin}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
               <TextField
                 fullWidth
                 label="Destino"
                 name="destination"
                 value={formik.values.destination}
+                error={formik.touched.destination && Boolean(formik.errors.destination)}
+                helperText={formik.touched.destination && formik.errors.destination}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
             </Stack>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="Distancia (km)"
                 name="distanceKm"
                 type="number"
                 value={formik.values.distanceKm}
+                error={formik.touched.distanceKm && Boolean(formik.errors.distanceKm)}
+                helperText={formik.touched.distanceKm && formik.errors.distanceKm}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
               <TextField
                 fullWidth
@@ -153,14 +168,20 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
                 name="estimatedDurationMin"
                 type="number"
                 value={formik.values.estimatedDurationMin}
+                error={formik.touched.estimatedDurationMin && Boolean(formik.errors.estimatedDurationMin)}
+                helperText={formik.touched.estimatedDurationMin && formik.errors.estimatedDurationMin}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
             </Stack>
 
             <Divider />
 
             <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Stack direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}>
                 <Typography variant="subtitle1">Casetas en la ruta</Typography>
                 <Button
                   startIcon={<PlusIcon style={{ width: 20 }} />}
@@ -174,9 +195,14 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
 
               <List>
                 {formik.values.tollbooths.map((tb, index) => (
-                  <ListItem key={index} sx={{ px: 0 }}>
-                    <Stack direction="row" spacing={2} width="100%" alignItems="center">
-                      <Typography variant="body2" sx={{ width: 30 }}>{tb.order}.</Typography>
+                  <ListItem key={index}
+                    sx={{ px: 0 }}>
+                    <Stack direction="row"
+                      spacing={2}
+                      width="100%"
+                      alignItems="center">
+                      <Typography variant="body2"
+                        sx={{ width: 30 }}>{tb.order}.</Typography>
                       <Autocomplete
                         fullWidth
                         size="small"
@@ -185,9 +211,11 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
                         isOptionEqualToValue={(option, value) => option.id === value.id}
                         value={allTollbooths.find(t => t.id === tb.id) || null}
                         onChange={(event, newValue) => handleTollboothChange(index, newValue)}
-                        renderInput={(params) => <TextField {...params} label="Seleccionar Caseta" />}
+                        renderInput={(params) => <TextField {...params}
+                          label="Seleccionar Caseta" />}
                       />
-                      <IconButton onClick={() => handleRemoveTollbooth(index)} color="error">
+                      <IconButton onClick={() => handleRemoveTollbooth(index)}
+                        color="error">
                         <TrashIcon style={{ width: 20 }} />
                       </IconButton>
                     </Stack>
@@ -195,15 +223,21 @@ export const RouteModal = ({ open, onClose, onSave, route, allTollbooths = [], s
                 ))}
               </List>
               {formik.values.tollbooths.length === 0 && (
-                <Typography variant="body2" color="text.secondary" textAlign="center">
+                <Typography variant="body2"
+                  color="text.secondary"
+                  textAlign="center">
                   No hay casetas asignadas a esta ruta.
                 </Typography>
               )}
             </Box>
 
-            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Stack direction="row"
+              spacing={2}
+              justifyContent="flex-end"
+              sx={{ mt: 3 }}>
               <Button onClick={handleClose}>Cancelar</Button>
-              <Button type="submit" variant="contained">
+              <Button type="submit"
+                variant="contained">
                 Guardar
               </Button>
             </Stack>

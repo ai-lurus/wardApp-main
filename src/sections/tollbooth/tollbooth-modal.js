@@ -21,22 +21,22 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
     enableReinitialize: true,
     initialValues: {
       name: tollbooth?.name || '',
-      cost2Axles: tollbooth?.cost2Axles || 0,
-      cost3Axles: tollbooth?.cost3Axles || 0,
-      cost4Axles: tollbooth?.cost4Axles || 0,
-      cost5Axles: tollbooth?.cost5Axles || 0,
-      cost6Axles: tollbooth?.cost6Axles || 0,
-      cost7PlusAxles: tollbooth?.cost7PlusAxles || 0,
+      cost2Axles: tollbooth?.cost2Axles ?? 0,
+      cost3Axles: tollbooth?.cost3Axles ?? 0,
+      cost4Axles: tollbooth?.cost4Axles ?? 0,
+      cost5Axles: tollbooth?.cost5Axles ?? 0,
+      cost6Axles: tollbooth?.cost6Axles ?? 0,
+      cost7PlusAxles: tollbooth?.cost7PlusAxles ?? 0,
       active: tollbooth?.active ?? true,
     },
     validationSchema: Yup.object({
       name: Yup.string().required('El nombre es requerido'),
-      cost2Axles: Yup.number().min(0, 'No puede ser negativo').required('Requerido'),
-      cost3Axles: Yup.number().min(0, 'No puede ser negativo'),
-      cost4Axles: Yup.number().min(0, 'No puede ser negativo'),
-      cost5Axles: Yup.number().min(0, 'No puede ser negativo'),
-      cost6Axles: Yup.number().min(0, 'No puede ser negativo'),
-      cost7PlusAxles: Yup.number().min(0, 'No puede ser negativo'),
+      cost2Axles: Yup.number().min(1, 'No puede ser 0 o negativo').required('Requerido'),
+      cost3Axles: Yup.number().min(1, 'No puede ser 0 o negativo'),
+      cost4Axles: Yup.number().min(1, 'No puede ser 0 o negativo'),
+      cost5Axles: Yup.number().min(1, 'No puede ser 0 o negativo'),
+      cost6Axles: Yup.number().min(1, 'No puede ser 0 o negativo'),
+      cost7PlusAxles: Yup.number().min(1, 'No puede ser 0 o negativo'),
     }),
     onSubmit: (values) => {
       onSave(values);
@@ -49,14 +49,17 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}
+      onClose={handleClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6" mb={3}>
+        <Typography variant="h6"
+          mb={3}>
           {isEdit ? 'Editar Caseta' : 'Nueva Caseta'}
         </Typography>
 
         {serverError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error"
+            sx={{ mb: 3 }}>
             {serverError}
           </Alert>
         )}
@@ -74,17 +77,22 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
               error={formik.touched.name && Boolean(formik.errors.name)}
               helperText={formik.touched.name && formik.errors.name}
             />
-            
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>Tarifas por número de ejes</Typography>
-            
-            <Stack direction="row" spacing={2}>
+
+            <Typography variant="subtitle2"
+              sx={{ mt: 2 }}>Tarifas por número de ejes</Typography>
+
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="2 Ejes"
                 name="cost2Axles"
                 type="number"
                 value={formik.values.cost2Axles}
+                error={formik.touched.cost2Axles && Boolean(formik.errors.cost2Axles)}
+                helperText={formik.touched.cost2Axles && formik.errors.cost2Axles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
               <TextField
                 fullWidth
@@ -93,10 +101,14 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
                 type="number"
                 value={formik.values.cost3Axles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.cost3Axles && Boolean(formik.errors.cost3Axles)}
+                helperText={formik.touched.cost3Axles && formik.errors.cost3Axles}
               />
             </Stack>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="4 Ejes"
@@ -104,6 +116,9 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
                 type="number"
                 value={formik.values.cost4Axles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.cost4Axles && Boolean(formik.errors.cost4Axles)}
+                helperText={formik.touched.cost4Axles && formik.errors.cost4Axles}
               />
               <TextField
                 fullWidth
@@ -112,10 +127,14 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
                 type="number"
                 value={formik.values.cost5Axles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.cost5Axles && Boolean(formik.errors.cost5Axles)}
+                helperText={formik.touched.cost5Axles && formik.errors.cost5Axles}
               />
             </Stack>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row"
+              spacing={2}>
               <TextField
                 fullWidth
                 label="6 Ejes"
@@ -123,6 +142,9 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
                 type="number"
                 value={formik.values.cost6Axles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.cost6Axles && Boolean(formik.errors.cost6Axles)}
+                helperText={formik.touched.cost6Axles && formik.errors.cost6Axles}
               />
               <TextField
                 fullWidth
@@ -131,12 +153,19 @@ export const TollboothModal = ({ open, onClose, onSave, tollbooth, serverError }
                 type="number"
                 value={formik.values.cost7PlusAxles}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.cost7PlusAxles && Boolean(formik.errors.cost7PlusAxles)}
+                helperText={formik.touched.cost7PlusAxles && formik.errors.cost7PlusAxles}
               />
             </Stack>
 
-            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Stack direction="row"
+              spacing={2}
+              justifyContent="flex-end"
+              sx={{ mt: 3 }}>
               <Button onClick={handleClose}>Cancelar</Button>
-              <Button type="submit" variant="contained">
+              <Button type="submit"
+                variant="contained">
                 Guardar
               </Button>
             </Stack>
