@@ -128,6 +128,15 @@ export const items = [
           </SvgIcon>
         ),
       },
+      {
+        title: 'Viajes',
+        path: '/trips',
+        icon: (
+          <SvgIcon fontSize="small">
+            <TruckIcon />
+          </SvgIcon>
+        ),
+      },
     ],
   },
   {

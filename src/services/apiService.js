@@ -721,6 +721,68 @@ export const tollboothsApi = {
     api.delete(`/tollbooths/${id}`).then((r) => r.data),
 };
 
+// ─── Trips (Mocked MVP) ────────────────────────────────
+
+let _mockTrips = [];
+
+export const tripsApi = {
+  list: async (params = {}) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    let items = [..._mockTrips];
+    
+    // Apply filters
+    if (params.status) items = items.filter(t => t.status === params.status);
+    if (params.routeId) items = items.filter(t => t.routeId === params.routeId);
+    if (params.unitId) items = items.filter(t => t.unitId === params.unitId);
+    if (params.operatorId) items = items.filter(t => t.operatorId === params.operatorId);
+
+    // Global search mock
+    if (params.query) {
+      const q = params.query.toLowerCase();
+      items = items.filter(t => 
+        (t.route?.name || '').toLowerCase().includes(q) ||
+        (t.unit?.plate || '').toLowerCase().includes(q) ||
+        (t.operator?.name || '').toLowerCase().includes(q)
+      );
+    }
+
+    return items;
+  },
+
+  get: async (id) => {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const trip = _mockTrips.find(t => t.id === id);
+    if (!trip) throw new Error('Viaje no encontrado');
+    return trip;
+  },
+
+  create: async (payload) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const newTrip = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...payload,
+      status: 'programado',
+      createdAt: new Date().toISOString(),
+    };
+    _mockTrips = [newTrip, ..._mockTrips];
+    return newTrip;
+  },
+
+  updateStatus: async (id, status, payload = {}) => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const index = _mockTrips.findIndex(t => t.id === id);
+    if (index === -1) throw new Error('Viaje no encontrado');
+    
+    _mockTrips[index] = {
+      ..._mockTrips[index],
+      status,
+      ...payload,
+      updatedAt: new Date().toISOString()
+    };
+    return _mockTrips[index];
+  }
+};
+
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
 
 export const fetchTransportData = async () => [];
