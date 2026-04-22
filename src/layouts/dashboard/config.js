@@ -110,7 +110,6 @@ export const items = [
   // --- Coming-soon modules (admin only) ---
   {
     title: 'Operaciones',
-    comingSoon: true,
     allowedRoles: ['admin'],
     moduleId: 'operaciones',
     sectionDivider: true,
@@ -119,6 +118,17 @@ export const items = [
         <TruckIcon />
       </SvgIcon>
     ),
+    children: [
+      {
+        title: 'Rutas y Casetas',
+        path: '/routes',
+        icon: (
+          <SvgIcon fontSize="small">
+            <MapIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
   {
     title: 'Flotas',
