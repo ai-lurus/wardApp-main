@@ -3,6 +3,7 @@ import { Avatar, Box, SvgIcon, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import AlertCard from './cards/alert-card';
 import FallbackCard from './cards/fallback-card';
+import MaterialCard from './cards/material-card';
 import OperatorCard from './cards/operator-card';
 import ReportCard from './cards/report-card';
 
@@ -67,6 +68,8 @@ function CardRenderer({ card }) {
       return <AlertCard payload={card.payload} />;
     case 'operador':
       return <OperatorCard payload={card.payload} />;
+    case 'material':
+      return <MaterialCard payload={card.payload} />;
     default:
       return <FallbackCard cardType={card.cardType} payload={card.payload} />;
   }
