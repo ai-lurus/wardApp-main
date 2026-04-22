@@ -540,13 +540,14 @@ const normalizeWardenConversationListItem = (c) => ({
   id: c.id,
   title: c.title,
   preview: c.preview ?? '',
+  createdAt: c.createdAt,
   updatedAt: c.updatedAt
 });
 
 const normalizeWardenMessage = (m) => ({
   id: m.id,
-  role: m.role,
-  content: m.content,
+  role: m.role === 'user' ? 'user' : 'warden',
+  text: m.content,
   createdAt: m.createdAt,
   status: m.status,
   cards: Array.isArray(m.cards) ? m.cards : []

@@ -3,8 +3,10 @@ import { usePathname } from 'next/navigation';
 import { Box } from '@mui/material';
 import { withAuthGuard } from 'src/hocs/with-auth-guard';
 import { WardenProvider } from 'src/contexts/warden-context';
+import { useWardenContext } from 'src/contexts/warden-context';
 import { useWardenStream } from 'src/hooks/use-warden-stream';
 import { useAuth } from 'src/hooks/use-auth';
+import { wardenApi } from 'src/services/apiService';
 import AiBar from 'src/sections/warden/ai-bar';
 import WardenPanel from 'src/sections/warden/warden-panel';
 import { SideNav } from './side-nav';
@@ -16,9 +18,15 @@ const SIDE_NAV_COLLAPSED_WIDTH = 72;
 function LayoutInner({ children, openNav, setOpenNav, collapsed, handleToggleCollapse, sideNavWidth }) {
   const { sendMessage, status } = useWardenStream();
   const { user } = useAuth();
+  const { loadConversations } = useWardenContext();
   const pathname = usePathname();
   const isWardenPage = pathname === '/warden';
   const wardenActive = (user?.company?.active_modules ?? []).includes('warden');
+
+  useEffect(() => {
+    if (!wardenActive) return;
+    wardenApi.listConversations().then(({ items }) => loadConversations(items)).catch(() => {});
+  }, [wardenActive, loadConversations]);
 
   return (
     <>
@@ -37,6 +45,7 @@ function LayoutInner({ children, openNav, setOpenNav, collapsed, handleToggleCol
           maxWidth: '100%',
           transition: 'padding-left 200ms ease',
           paddingLeft: { lg: `${sideNavWidth}px` },
+          ...(isWardenPage && { height: '100vh', overflow: 'hidden' }),
         }}
       >
         {wardenActive && !isWardenPage && <AiBar onSend={sendMessage} />}

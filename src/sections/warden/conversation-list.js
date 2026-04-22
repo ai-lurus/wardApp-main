@@ -5,8 +5,9 @@ import { Box, Button, Divider, InputBase, SvgIcon, Typography } from '@mui/mater
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useWardenContext } from 'src/contexts/warden-context';
+import { wardenApi } from 'src/services/apiService';
 
 function formatConvTime(dateStr) {
   if (!dateStr) return '';
@@ -17,8 +18,20 @@ function formatConvTime(dateStr) {
 }
 
 export default function ConversationList({ onNewConversation }) {
-  const { conversations, activeConversationId, setActiveConversation } = useWardenContext();
+  const { conversations, activeConversationId, setActiveConversation, mergeConversation } = useWardenContext();
   const [search, setSearch] = useState('');
+
+  const handleSelectConversation = useCallback(async (conv) => {
+    setActiveConversation(conv.id);
+    if (!conv.messages) {
+      try {
+        const detail = await wardenApi.getConversation(conv.id);
+        mergeConversation({ id: conv.id, messages: detail.messages });
+      } catch {
+        // silently ignore — panel will show empty messages
+      }
+    }
+  }, [setActiveConversation, mergeConversation]);
 
   const filtered = conversations.filter((c) =>
     (c.preview || '').toLowerCase().includes(search.toLowerCase())
@@ -106,7 +119,7 @@ export default function ConversationList({ onNewConversation }) {
             return (
               <Box
                 key={conv.id}
-                onClick={() => setActiveConversation(conv.id)}
+                onClick={() => handleSelectConversation(conv)}
                 sx={{
                   px: 2,
                   py: 1.5,

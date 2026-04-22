@@ -27,6 +27,7 @@ const HANDLERS = {
   APPEND_MESSAGE: 'APPEND_MESSAGE',
   UPDATE_STREAMING_MESSAGE: 'UPDATE_STREAMING_MESSAGE',
   APPEND_CARD: 'APPEND_CARD',
+  MERGE_CONVERSATION: 'MERGE_CONVERSATION',
   RESET: 'RESET'
 };
 
@@ -124,6 +125,16 @@ const handlers = {
       })
     };
   },
+  [HANDLERS.MERGE_CONVERSATION]: (state, action) => {
+    const { id, messages } = action.payload ?? {};
+    if (!id) return state;
+    return {
+      ...state,
+      conversations: state.conversations.map((c) =>
+        c.id === id ? { ...c, messages } : c
+      )
+    };
+  },
   [HANDLERS.RESET]: () => ({ ...initialState })
 };
 
@@ -142,6 +153,7 @@ export const WardenContext = createContext({
   appendMessage: () => {},
   updateStreamingMessage: () => {},
   appendCard: () => {},
+  mergeConversation: () => {},
   reset: () => {}
 });
 
@@ -184,6 +196,11 @@ export const WardenProvider = (props) => {
       dispatch({ type: HANDLERS.APPEND_CARD, payload: { conversationId, card } }),
     []
   );
+  const mergeConversation = useCallback(
+    ({ id, messages }) =>
+      dispatch({ type: HANDLERS.MERGE_CONVERSATION, payload: { id, messages } }),
+    []
+  );
   const reset = useCallback(() => dispatch({ type: HANDLERS.RESET }), []);
 
   const value = useMemo(
@@ -199,6 +216,7 @@ export const WardenProvider = (props) => {
       appendMessage,
       updateStreamingMessage,
       appendCard,
+      mergeConversation,
       reset
     }),
     [
@@ -213,6 +231,7 @@ export const WardenProvider = (props) => {
       appendMessage,
       updateStreamingMessage,
       appendCard,
+      mergeConversation,
       reset
     ]
   );

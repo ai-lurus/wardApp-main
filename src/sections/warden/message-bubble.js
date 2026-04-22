@@ -6,6 +6,59 @@ import FallbackCard from './cards/fallback-card';
 import OperatorCard from './cards/operator-card';
 import ReportCard from './cards/report-card';
 
+// Split a text string by **bold** and *italic* tokens, returning styled React nodes.
+function renderInline(text, keyPrefix) {
+  if (!text) return null;
+  const segments = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/);
+  return segments.map((seg, i) => {
+    if (seg.startsWith('**') && seg.endsWith('**')) {
+      return <strong key={`${keyPrefix}-${i}`}>{seg.slice(2, -2)}</strong>;
+    }
+    if (seg.startsWith('*') && seg.endsWith('*')) {
+      return <em key={`${keyPrefix}-${i}`}>{seg.slice(1, -1)}</em>;
+    }
+    return seg || null;
+  });
+}
+
+function MarkdownText({ text }) {
+  if (!text) return null;
+  const lines = text.split('\n');
+  const output = [];
+  const bullets = [];
+
+  const flushBullets = (idx) => {
+    if (!bullets.length) return;
+    output.push(
+      <Box key={`ul-${idx}`} component="ul" sx={{ my: 0.25, pl: 2.5 }}>
+        {bullets.map((b, i) => (
+          <Box key={i} component="li" sx={{ typography: 'body2', lineHeight: 1.6 }}>
+            {renderInline(b, `li-${idx}-${i}`)}
+          </Box>
+        ))}
+      </Box>
+    );
+    bullets.length = 0;
+  };
+
+  lines.forEach((line, idx) => {
+    if (/^[-•]\s/.test(line)) {
+      bullets.push(line.slice(2));
+    } else {
+      flushBullets(idx);
+      output.push(
+        <Typography key={`line-${idx}`} variant="body2" component="div" sx={{ lineHeight: 1.6, minHeight: line ? undefined : '0.6em' }}>
+          {renderInline(line, `line-${idx}`)}
+        </Typography>
+      );
+    }
+  });
+
+  flushBullets(lines.length);
+
+  return <Box>{output}</Box>;
+}
+
 function CardRenderer({ card }) {
   switch (card.cardType) {
     case 'reporte':
@@ -66,9 +119,7 @@ export default function MessageBubble({ message }) {
             py: 1,
           }}
         >
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-            {message.text}
-          </Typography>
+          <MarkdownText text={message.text} />
         </Box>
       </Box>
     );
@@ -98,9 +149,7 @@ export default function MessageBubble({ message }) {
         {isStreaming && !hasText ? (
           <StreamingDots />
         ) : (
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-            {message.text}
-          </Typography>
+          <MarkdownText text={message.text} />
         )}
         {cards.map((card, i) => (
           <CardRenderer key={i} card={card} />
