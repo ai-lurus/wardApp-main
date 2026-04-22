@@ -91,10 +91,11 @@ export const SideNav = (props) => {
     if (item.allowedRoles && !item.allowedRoles.includes(userRole)) return false;
     if (item.adminOnly && userRole !== 'admin') return false;
 
-    // 2. Module access checks (Company setting)
-    // By default, if an item requires a specific module, check the company's active_modules.
-    if (item.moduleId && auth.user?.company?.active_modules) {
-      if (!auth.user.company.active_modules.includes(item.moduleId)) return false;
+    // 2. Module access checks — if item requires a module, it must be in active_modules.
+    // Default to [] so items are hidden when active_modules is not set.
+    if (item.moduleId) {
+      const modules = auth.user?.company?.active_modules ?? [];
+      if (!modules.includes(item.moduleId)) return false;
     }
 
     return true;

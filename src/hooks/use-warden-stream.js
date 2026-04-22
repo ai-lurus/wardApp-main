@@ -63,7 +63,7 @@ export function useWardenStream() {
           switch (eventType) {
             case 'conversation':
               activeConvId = data.id;
-              addConversation({ id: data.id, messages: [], preview: text.slice(0, 60) });
+              addConversation({ id: data.id, messages: [], preview: text.slice(0, 60), createdAt: new Date().toISOString() });
               appendMessage(data.id, { id: `user-${Date.now()}`, role: 'user', text });
               break;
             case 'message_start':

@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { withAuthGuard } from 'src/hocs/with-auth-guard';
 import { WardenProvider } from 'src/contexts/warden-context';
 import { useWardenStream } from 'src/hooks/use-warden-stream';
+import { useAuth } from 'src/hooks/use-auth';
 import AiBar from 'src/sections/warden/ai-bar';
 import WardenPanel from 'src/sections/warden/warden-panel';
 import { SideNav } from './side-nav';
@@ -14,6 +15,10 @@ const SIDE_NAV_COLLAPSED_WIDTH = 72;
 
 function LayoutInner({ children, openNav, setOpenNav, collapsed, handleToggleCollapse, sideNavWidth }) {
   const { sendMessage, status } = useWardenStream();
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const isWardenPage = pathname === '/warden';
+  const wardenActive = (user?.company?.active_modules ?? []).includes('warden');
 
   return (
     <>
@@ -34,10 +39,10 @@ function LayoutInner({ children, openNav, setOpenNav, collapsed, handleToggleCol
           paddingLeft: { lg: `${sideNavWidth}px` },
         }}
       >
-        <AiBar onSend={sendMessage} />
+        {wardenActive && !isWardenPage && <AiBar onSend={sendMessage} />}
         {children}
       </Box>
-      <WardenPanel onSend={sendMessage} streamStatus={status} />
+      {wardenActive && <WardenPanel onSend={sendMessage} streamStatus={status} />}
     </>
   );
 }

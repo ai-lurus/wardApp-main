@@ -1,7 +1,9 @@
 import ArchiveBoxIcon from '@heroicons/react/24/solid/ArchiveBoxIcon';
 import BanknotesIcon from '@heroicons/react/24/solid/BanknotesIcon';
 import MapIcon from '@heroicons/react/24/solid/MapIcon';
+import MicrophoneIcon from '@heroicons/react/24/solid/MicrophoneIcon';
 import PaperAirplaneIcon from '@heroicons/react/24/solid/PaperAirplaneIcon';
+import PaperClipIcon from '@heroicons/react/24/solid/PaperClipIcon';
 import ShieldCheckIcon from '@heroicons/react/24/solid/ShieldCheckIcon';
 import TruckIcon from '@heroicons/react/24/solid/TruckIcon';
 import WrenchIcon from '@heroicons/react/24/solid/WrenchIcon';
@@ -61,62 +63,65 @@ function EmptyState({ onAsk }) {
         flexDirection: 'column',
         alignItems: 'center',
         overflowY: 'auto',
-        px: 3,
-        py: 4,
+        px: 4,
+        py: 5,
       }}
     >
       <Box
         sx={{
-          width: 56,
-          height: 56,
-          borderRadius: 2,
-          bgcolor: '#6366F1',
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          bgcolor: '#EEF2FF',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          mb: 2,
+          mb: 2.5,
         }}
       >
-        <SvgIcon sx={{ fontSize: 32, color: 'white' }}>
+        <SvgIcon sx={{ fontSize: 36, color: '#6366F1' }}>
           <ShieldCheckIcon />
         </SvgIcon>
       </Box>
+
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
         Hola, soy Warden
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
         Tu guardián inteligente de operaciones
       </Typography>
 
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
           gap: 2,
           width: '100%',
-          maxWidth: 800,
+          maxWidth: 860,
         }}
       >
         {SUGGEST_CATEGORIES.map((cat) => (
-          <Paper key={cat.title} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper
+            key={cat.title}
+            variant="outlined"
+            sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'grey.200' }}
+          >
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
+                gap: 1.5,
                 px: 2,
                 py: 1.25,
-                borderBottom: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'grey.50',
+                bgcolor: '#F5F3FF',
               }}
             >
-              <SvgIcon sx={{ fontSize: 16, color: '#6366F1' }}>{cat.icon}</SvgIcon>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              <SvgIcon sx={{ fontSize: 18, color: '#6366F1' }}>{cat.icon}</SvgIcon>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                 {cat.title}
               </Typography>
             </Box>
-            <Box sx={{ px: 2, py: 1 }}>
+            <Box sx={{ px: 2, py: 1.25 }}>
               {cat.items.map((item) => (
                 <Typography
                   key={item}
@@ -125,8 +130,8 @@ function EmptyState({ onAsk }) {
                   sx={{
                     py: 0.5,
                     cursor: 'pointer',
-                    color: 'text.secondary',
-                    '&:hover': { color: '#6366F1' },
+                    color: '#6366F1',
+                    '&:hover': { color: '#4F46E5' },
                     transition: 'color 0.15s',
                   }}
                 >
@@ -144,7 +149,7 @@ function EmptyState({ onAsk }) {
 EmptyState.propTypes = { onAsk: PropTypes.func.isRequired };
 
 export default function WardenPageView({ onSend, streamStatus }) {
-  const { conversations, activeConversationId, setActiveConversation, addConversation } =
+  const { conversations, activeConversationId, setActiveConversation } =
     useWardenContext();
   const [inputText, setInputText] = useState('');
 
@@ -187,13 +192,15 @@ export default function WardenPageView({ onSend, streamStatus }) {
           <EmptyState onAsk={(text) => handleSubmit(text)} />
         )}
 
+        {/* Input bar */}
         <Box
           sx={{
-            px: 2,
-            py: 1.5,
+            px: 3,
+            py: 2,
             borderTop: '1px solid',
             borderColor: 'divider',
             flexShrink: 0,
+            bgcolor: 'background.paper',
           }}
         >
           <Paper
@@ -203,12 +210,24 @@ export default function WardenPageView({ onSend, streamStatus }) {
               alignItems: 'center',
               gap: 1,
               px: 1.5,
-              py: 0.5,
-              borderRadius: 2,
-              '&:focus-within': { borderColor: '#6366F1', boxShadow: '0 0 0 2px #6366F140' },
+              py: 1,
+              maxWidth: 860,
+              mx: 'auto',
+              borderRadius: 3,
+              borderColor: 'grey.300',
+              '&:focus-within': {
+                borderColor: '#6366F1',
+                boxShadow: '0 0 0 3px #6366F120',
+              },
               transition: 'box-shadow 0.2s, border-color 0.2s',
             }}
           >
+            <IconButton size="small" sx={{ color: 'text.disabled', flexShrink: 0 }}>
+              <SvgIcon fontSize="small">
+                <PaperClipIcon />
+              </SvgIcon>
+            </IconButton>
+
             <InputBase
               fullWidth
               multiline
@@ -217,13 +236,28 @@ export default function WardenPageView({ onSend, streamStatus }) {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Escribe un comando o pregunta..."
-              sx={{ fontSize: 14, py: 0.25 }}
+              sx={{ fontSize: 14, flex: 1, py: 0.25 }}
             />
+
+            <IconButton size="small" sx={{ color: 'text.disabled', flexShrink: 0 }}>
+              <SvgIcon fontSize="small">
+                <MicrophoneIcon />
+              </SvgIcon>
+            </IconButton>
+
             <IconButton
-              size="small"
               onClick={() => handleSubmit()}
               disabled={!inputText.trim() || streamStatus === 'streaming'}
-              sx={{ color: inputText.trim() ? '#6366F1' : 'text.disabled', flexShrink: 0 }}
+              sx={{
+                bgcolor: inputText.trim() ? '#6366F1' : 'grey.200',
+                color: inputText.trim() ? 'white' : 'text.disabled',
+                width: 36,
+                height: 36,
+                flexShrink: 0,
+                '&:hover': { bgcolor: inputText.trim() ? '#4F46E5' : 'grey.200' },
+                '&.Mui-disabled': { bgcolor: 'grey.200', color: 'text.disabled' },
+                transition: 'background-color 0.2s',
+              }}
             >
               <SvgIcon fontSize="small">
                 <PaperAirplaneIcon />

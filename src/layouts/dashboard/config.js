@@ -44,6 +44,7 @@ export const items = [
   {
     title: 'Warden',
     path: '/warden',
+    moduleId: 'warden',
     icon: (
       <SvgIcon fontSize="small">
         <ShieldCheckIcon />
