@@ -26,6 +26,7 @@ const HANDLERS = {
   ADD_CONVERSATION: 'ADD_CONVERSATION',
   APPEND_MESSAGE: 'APPEND_MESSAGE',
   UPDATE_STREAMING_MESSAGE: 'UPDATE_STREAMING_MESSAGE',
+  APPEND_CARD: 'APPEND_CARD',
   RESET: 'RESET'
 };
 
@@ -107,6 +108,22 @@ const handlers = {
       })
     };
   },
+  [HANDLERS.APPEND_CARD]: (state, action) => {
+    const { conversationId, card } = action.payload ?? {};
+    if (!conversationId || !card) return state;
+    return {
+      ...state,
+      conversations: state.conversations.map((c) => {
+        if (c.id !== conversationId) return c;
+        const messages = c.messages ?? [];
+        if (messages.length === 0) return c;
+        const lastIdx = messages.length - 1;
+        const last = messages[lastIdx];
+        const updated = { ...last, cards: [...(last.cards ?? []), card] };
+        return { ...c, messages: [...messages.slice(0, lastIdx), updated] };
+      })
+    };
+  },
   [HANDLERS.RESET]: () => ({ ...initialState })
 };
 
@@ -124,6 +141,7 @@ export const WardenContext = createContext({
   addConversation: () => {},
   appendMessage: () => {},
   updateStreamingMessage: () => {},
+  appendCard: () => {},
   reset: () => {}
 });
 
@@ -161,6 +179,11 @@ export const WardenProvider = (props) => {
       dispatch({ type: HANDLERS.UPDATE_STREAMING_MESSAGE, payload: { conversationId, delta } }),
     []
   );
+  const appendCard = useCallback(
+    (conversationId, card) =>
+      dispatch({ type: HANDLERS.APPEND_CARD, payload: { conversationId, card } }),
+    []
+  );
   const reset = useCallback(() => dispatch({ type: HANDLERS.RESET }), []);
 
   const value = useMemo(
@@ -175,6 +198,7 @@ export const WardenProvider = (props) => {
       addConversation,
       appendMessage,
       updateStreamingMessage,
+      appendCard,
       reset
     }),
     [
@@ -188,6 +212,7 @@ export const WardenProvider = (props) => {
       addConversation,
       appendMessage,
       updateStreamingMessage,
+      appendCard,
       reset
     ]
   );

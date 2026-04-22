@@ -1,7 +1,12 @@
-// Warden standalone page — /warden route. Wraps WardenPageView in the
-// authenticated layout. Implementation lands in T057 (US1).
-import WardenPageView from '../../sections/warden/warden-page-view';
+import { DashboardLayout } from 'src/layouts/dashboard/layout';
+import { useWardenStream } from 'src/hooks/use-warden-stream';
+import WardenPageView from 'src/sections/warden/warden-page-view';
 
-export default function WardenPage() {
-  return <WardenPageView />;
-}
+const WardenPage = () => {
+  const { sendMessage, status } = useWardenStream();
+  return <WardenPageView onSend={sendMessage} streamStatus={status} />;
+};
+
+WardenPage.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+
+export default WardenPage;

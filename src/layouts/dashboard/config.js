@@ -5,6 +5,7 @@ import DocumentChartBarIcon from '@heroicons/react/24/solid/DocumentChartBarIcon
 import ExclamationTriangleIcon from '@heroicons/react/24/solid/ExclamationTriangleIcon';
 import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
 import MapIcon from '@heroicons/react/24/solid/MapIcon';
+import ShieldCheckIcon from '@heroicons/react/24/solid/ShieldCheckIcon';
 import TagIcon from '@heroicons/react/24/solid/TagIcon';
 import TruckIcon from '@heroicons/react/24/solid/TruckIcon';
 import UserGroupIcon from '@heroicons/react/24/solid/UserGroupIcon';
@@ -37,6 +38,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <HomeIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: 'Warden',
+    path: '/warden',
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShieldCheckIcon />
       </SvgIcon>
     ),
   },
