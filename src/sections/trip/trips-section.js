@@ -6,13 +6,13 @@ import { TripsSearch } from './trips-search';
 import { TripsSummary } from './trips-summary';
 import { TripCreateModal } from './trip-create-modal';
 import { TripDetailDrawer } from './trip-detail-drawer';
-import { tripsApi, routesApi, unitsApi, usersApi } from 'src/services/apiService';
+import { tripsApi, routesApi, unitsApi, operatorsApi } from 'src/services/apiService';
 
 export const TripsSection = () => {
   const [trips, setTrips] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [units, setUnits] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [operators, setOperators] = useState([]);
   
   const [filters, setFilters] = useState({ query: '', status: '', routeId: '', unitId: '' });
   
@@ -26,14 +26,14 @@ export const TripsSection = () => {
 
   const fetchDependencies = useCallback(async () => {
     try {
-      const [fetchedRoutes, fetchedUnits, fetchedUsers] = await Promise.all([
+      const [fetchedRoutes, fetchedUnits, fetchedOperators] = await Promise.all([
         routesApi.list({ active: 'true' }),
         unitsApi.list({ available_only: 'true' }),
-        usersApi.list()
+        operatorsApi.list({ available_only: 'true' })
       ]);
       setRoutes(fetchedRoutes);
       setUnits(fetchedUnits?.items || fetchedUnits || []);
-      setUsers(fetchedUsers || []);
+      setOperators(fetchedOperators || []);
     } catch (err) {
       console.error('Error fetching dependencies:', err);
     }
@@ -117,7 +117,7 @@ sx={{ mb: 2 }}>
           onSuccess={handleTripCreated}
           routes={routes}
           units={units}
-          users={users}
+          operators={operators}
         />
       )}
 

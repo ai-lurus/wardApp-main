@@ -1,4 +1,4 @@
-import { Box, Card, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography, Chip, Tooltip, IconButton } from '@mui/material';
+import { Box, Card, Stack, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Typography, Chip, Tooltip, IconButton } from '@mui/material';
 import { format } from 'date-fns';
 import EyeIcon from '@heroicons/react/24/solid/EyeIcon';
 
@@ -13,7 +13,7 @@ export const TripsTable = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -31,6 +31,8 @@ export const TripsTable = (props) => {
               <TableCell>Unidad</TableCell>
               <TableCell>Operador</TableCell>
               <TableCell>Costo Estimado</TableCell>
+              <TableCell>Ingresos</TableCell>
+              <TableCell>Rentabilidad</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -41,13 +43,15 @@ export const TripsTable = (props) => {
               const totalCost = trip.estimatedCost?.total || 0;
 
               return (
-                <TableRow hover key={trip.id}>
+                <TableRow hover
+                  key={trip.id}>
                   <TableCell>
                     {format(new Date(trip.scheduledDate || trip.createdAt), 'dd/MM/yyyy HH:mm')}
                   </TableCell>
                   <TableCell>
                     {trip.route?.name}
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2"
+                      color="text.secondary">
                       {trip.route?.origin} → {trip.route?.destination}
                     </Typography>
                   </TableCell>
@@ -61,7 +65,34 @@ export const TripsTable = (props) => {
                     ${totalCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </TableCell>
                   <TableCell>
-                    <Chip label={status.label} color={status.color} size="small" />
+                    {trip.status === 'completado' && trip.actualCost?.revenue ? (
+                      <Typography variant="body2"
+                        fontWeight="bold">
+                        ${trip.actualCost.revenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2"
+                        color="text.secondary">--</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {trip.status === 'completado' && trip.actualCost?.revenue ? (
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color={((trip.actualCost.revenue - trip.actualCost.total) / trip.actualCost.revenue) >= 0 ? 'success.main' : 'error.main'}
+                      >
+                        {(((trip.actualCost.revenue - trip.actualCost.total) / trip.actualCost.revenue) * 100).toFixed(1)}%
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2"
+                        color="text.secondary">--</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={status.label}
+                      color={status.color}
+                      size="small" />
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Ver Detalle">

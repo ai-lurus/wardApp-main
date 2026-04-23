@@ -7,8 +7,9 @@ import { tripsApi, unitsApi } from 'src/services/apiService';
 
 export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
   const [arrivalTime, setArrivalTime] = useState('');
-  const [fuelCost, setFuelCost] = useState(trip?.estimatedCost?.fuel || 0);
-  const [extrasCost, setExtrasCost] = useState(trip?.estimatedCost?.extras || 0);
+  const [fuelCost, setFuelCost] = useState(trip?.estimatedCost?.fuel || '');
+  const [extrasCost, setExtrasCost] = useState(trip?.estimatedCost?.extras || '');
+  const [revenue, setRevenue] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCloseTrip = async () => {
@@ -19,7 +20,8 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
         tolls,
         fuel: Number(fuelCost),
         extras: Number(extrasCost),
-        total: tolls + Number(fuelCost) + Number(extrasCost)
+        total: tolls + Number(fuelCost) + Number(extrasCost),
+        revenue: Number(revenue)
       };
 
       await tripsApi.updateStatus(trip.id, 'completado', {
@@ -67,7 +69,12 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
             value={fuelCost}
             onChange={(e) => setFuelCost(e.target.value)}
             InputProps={{
-              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              startAdornment: <InputAdornment
+                position="start"
+                sx={{
+                  transform: "translateY(4px)"
+                }}
+              >$</InputAdornment>,
             }}
             fullWidth
           />
@@ -77,9 +84,30 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
             value={extrasCost}
             onChange={(e) => setExtrasCost(e.target.value)}
             InputProps={{
-              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              startAdornment: <InputAdornment
+                position="start"
+                sx={{
+                  transform: "translateY(4px)"
+                }}
+              >$</InputAdornment>,
             }}
             fullWidth
+          />
+          <TextField
+            label="Ingresos del Viaje (Facturado)"
+            type="number"
+            value={revenue}
+            onChange={(e) => setRevenue(e.target.value)}
+            InputProps={{
+              startAdornment: <InputAdornment
+                position="start"
+                sx={{
+                  transform: "translateY(4px)"
+                }}
+              >$</InputAdornment>,
+            }}
+            fullWidth
+            required
           />
           <Typography variant="subtitle2"
             sx={{ mt: 2 }}>
@@ -93,7 +121,7 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
         <Button
           onClick={handleCloseTrip}
           variant="contained"
-          disabled={loading || !arrivalTime}
+          disabled={loading || !arrivalTime || revenue === ''}
         >
           Confirmar y Cerrar
         </Button>

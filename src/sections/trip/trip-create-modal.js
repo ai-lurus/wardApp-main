@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  Stepper, Step, StepLabel, Box, Stack, FormControl, InputLabel, Select, MenuItem,
-  TextField, Typography, CircularProgress, Divider, Paper, Alert
+  Stepper, Step, StepLabel, Box, Stack, MenuItem,
+  TextField, Typography, CircularProgress, Divider, Paper, Alert, InputAdornment
 } from '@mui/material';
 import { routesApi, tripsApi, unitsApi } from 'src/services/apiService';
 
 const steps = ['Asignación', 'Desglose de Costos', 'Confirmación'];
 
-export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users }) => {
+export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, operators }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,27 +20,28 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
   const [scheduledDate, setScheduledDate] = useState('');
 
   // Cost Preview State
-  const [costPreview, setCostPreview] = useState(null);
-  const [adHocExtras, setAdHocExtras] = useState(0);
+  const [routeDetails, setRouteDetails] = useState(null);
+  const [adHocExtras, setAdHocExtras] = useState("");
 
   // Available options
   const availableUnits = units.filter(u => u.status === 'disponible');
-  const availableOperators = users; // For now assuming all operators available or filtering by role
+  const availableOperators = operators; // For now assuming all operators available or filtering by role
 
   const selectedRoute = routes.find(r => r.id === routeId);
   const selectedUnit = units.find(u => u.id === unitId);
-  const selectedOperator = users.find(u => u.id === operatorId);
+  const selectedOperator = operators.find(u => u.id === operatorId);
 
   const fetchCostPreview = async () => {
-    if (!routeId || !selectedUnit?.axles) return;
+    const axles = selectedUnit?.axles || selectedUnit?.axesNumber;
+    if (!routeId || !axles) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await routesApi.getCostPreview(routeId, selectedUnit.axles);
-      setCostPreview(result);
+      const fullRoute = await routesApi.get(routeId);
+      setRouteDetails(fullRoute);
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || err.message || 'Error al obtener desglose de costos');
+      console.warn("No se pudo obtener la ruta completa, usando datos locales", err);
+      setRouteDetails(selectedRoute);
     } finally {
       setLoading(false);
     }
@@ -65,10 +66,26 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
 
   const handleBack = () => setActiveStep((prev) => prev - 1);
 
+  const calculateTollsTotal = () => {
+    if (!routeDetails?.tollbooths) return 0;
+    const axles = selectedUnit?.axles || selectedUnit?.axesNumber || 2;
+    return routeDetails.tollbooths.reduce((sum, tb) => {
+      let cost = 0;
+      if (axles <= 2) cost = tb.cost2Axles;
+      else if (axles === 3) cost = tb.cost3Axles;
+      else if (axles === 4) cost = tb.cost4Axles;
+      else if (axles === 5) cost = tb.cost5Axles;
+      else if (axles === 6) cost = tb.cost6Axles;
+      else cost = tb.cost7PlusAxles;
+      return sum + (cost || 0);
+    }, 0);
+  };
+
   const handleCreate = async () => {
     setLoading(true);
     setError(null);
     try {
+      const tollsTotal = calculateTollsTotal();
       const payload = {
         routeId,
         unitId,
@@ -78,11 +95,11 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
         unit: selectedUnit,
         operator: selectedOperator,
         estimatedCost: {
-          tolls: costPreview?.tollsTotal || 0,
-          fuel: costPreview?.fuelEstimatedCost || 0,
-          insurance: 0, // Mock or fetch if needed
+          tolls: tollsTotal,
+          fuel: 0,
+          insurance: 0,
           extras: Number(adHocExtras) || 0,
-          total: (costPreview?.tollsTotal || 0) + (costPreview?.fuelEstimatedCost || 0) + (Number(adHocExtras) || 0)
+          total: tollsTotal + (Number(adHocExtras) || 0)
         }
       };
 
@@ -156,7 +173,10 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
       case 1:
         if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
         if (error) return <Alert severity="error">{error}</Alert>;
-        if (!costPreview) return <Typography>No se pudo cargar el preview de costos.</Typography>;
+        if (!routeDetails) return <Typography>No se pudo cargar el detalle de la ruta.</Typography>;
+
+        const tollsTotalDisplay = calculateTollsTotal();
+        const tollboothsCountDisplay = routeDetails?.tollbooths?.length || 0;
 
         return (
           <Stack spacing={3}
@@ -168,14 +188,45 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
               <Stack direction="row"
                 justifyContent="space-between"
                 sx={{ mb: 1 }}>
-                <Typography color="text.secondary">Casetas ({costPreview.tollboothsCount})</Typography>
-                <Typography>${costPreview.tollsTotal?.toLocaleString('es-MX')}</Typography>
+                <Typography color="text.secondary">Casetas ({tollboothsCountDisplay})</Typography>
+                <Typography>${tollsTotalDisplay.toLocaleString('es-MX')}</Typography>
               </Stack>
+              {routeDetails?.tollbooths?.length > 0 && (
+                <Box sx={{ pl: 2, mb: 1 }}>
+                  {routeDetails.tollbooths.map((tb, idx) => {
+                    const axles = selectedUnit?.axles || selectedUnit?.axesNumber || 2;
+                    let cost = 0;
+                    if (axles <= 2) cost = tb.cost2Axles;
+                    else if (axles === 3) cost = tb.cost3Axles;
+                    else if (axles === 4) cost = tb.cost4Axles;
+                    else if (axles === 5) cost = tb.cost5Axles;
+                    else if (axles === 6) cost = tb.cost6Axles;
+                    else cost = tb.cost7PlusAxles;
+
+                    cost = cost || 0;
+
+                    return (
+                      <Stack key={tb.id || idx}
+                        direction="row"
+                        justifyContent="space-between">
+                        <Typography variant="body2"
+                          color="text.secondary">
+                          • {tb.name || `Caseta ${idx + 1}`}
+                        </Typography>
+                        <Typography variant="body2"
+                          color="text.secondary">
+                          ${cost.toLocaleString('es-MX')}
+                        </Typography>
+                      </Stack>
+                    );
+                  })}
+                </Box>
+              )}
               <Stack direction="row"
                 justifyContent="space-between"
                 sx={{ mb: 1 }}>
                 <Typography color="text.secondary">Combustible (Est.)</Typography>
-                <Typography>${costPreview.fuelEstimatedCost?.toLocaleString('es-MX')}</Typography>
+                <Typography>$0.00</Typography>
               </Stack>
               <Stack direction="row"
                 justifyContent="space-between"
@@ -187,21 +238,27 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, users
               <Stack direction="row"
                 justifyContent="space-between"
                 alignItems="center">
-                <Typography variant="subtitle2">Extras Ad-hoc</Typography>
+                <Typography variant="subtitle2">Extras</Typography>
                 <TextField
                   size="small"
                   type="number"
                   value={adHocExtras}
                   onChange={(e) => setAdHocExtras(e.target.value)}
                   sx={{ width: 120 }}
-                  InputProps={{ startAdornment: '$' }}
+                  hiddenLabel
+                  InputProps={{ 
+                    startAdornment: <InputAdornment position="start">$</InputAdornment> 
+                  }}
+                  inputProps={{
+                    sx: { py: 1, textAlign: 'right' } // py: 1 ensures vertical center, textAlign right is standard for currency
+                  }}
                 />
               </Stack>
             </Paper>
           </Stack>
         );
       case 2:
-        const total = (costPreview?.tollsTotal || 0) + (costPreview?.fuelEstimatedCost || 0) + (Number(adHocExtras) || 0);
+        const total = calculateTollsTotal() + (Number(adHocExtras) || 0);
         return (
           <Stack spacing={3}
             sx={{ mt: 2 }}>

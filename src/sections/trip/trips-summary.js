@@ -11,21 +11,21 @@ export const TripsSummary = ({ trips = [] }) => {
   const enTransito = trips.filter(t => t.status === 'en_curso').length;
   const completados = trips.filter(t => t.status === 'completado').length;
 
-  // Eficiencia de Costos: Diferencia entre presupuesto estimado y costo real de la operación
-  let eficiencia = 0;
-  const tripsConCostoReal = trips.filter(t => t.status === 'completado' && t.actualCost && t.estimatedCost);
+  // Rentabilidad Promedio: Diferencia entre ingresos facturados y costo real de la operación
+  let rentabilidad = 0;
+  const tripsCompletados = trips.filter(t => t.status === 'completado' && t.actualCost?.revenue);
 
-  if (tripsConCostoReal.length > 0) {
-    const totalEst = tripsConCostoReal.reduce((acc, t) => acc + (t.estimatedCost?.total || 0), 0);
-    const totalReal = tripsConCostoReal.reduce((acc, t) => acc + (t.actualCost?.total || 0), 0);
+  if (tripsCompletados.length > 0) {
+    const totalRevenue = tripsCompletados.reduce((acc, t) => acc + (t.actualCost.revenue || 0), 0);
+    const totalReal = tripsCompletados.reduce((acc, t) => acc + (t.actualCost.total || 0), 0);
     
-    if (totalEst > 0) {
-      eficiencia = ((totalEst - totalReal) / totalEst) * 100;
+    if (totalRevenue > 0) {
+      rentabilidad = ((totalRevenue - totalReal) / totalRevenue) * 100;
     }
   }
 
-  const signo = eficiencia > 0 ? '+' : '';
-  const eficienciaFormatted = tripsConCostoReal.length > 0 ? `${signo}${eficiencia.toFixed(1)}%` : '0.0%';
+  const signo = rentabilidad > 0 ? '+' : '';
+  const rentabilidadFormatted = tripsCompletados.length > 0 ? `${signo}${rentabilidad.toFixed(1)}%` : '0.0%';
 
   const metrics = [
     {
@@ -47,10 +47,10 @@ export const TripsSummary = ({ trips = [] }) => {
       color: 'success'
     },
     {
-      title: 'EFICIENCIA DE COSTOS',
-      value: eficienciaFormatted,
-      icon: eficiencia >= 0 ? <ArrowTrendingUpIcon /> : <ArrowTrendingDownIcon />,
-      color: eficiencia >= 0 ? 'success' : 'error'
+      title: 'RENTABILIDAD PROMEDIO',
+      value: rentabilidadFormatted,
+      icon: rentabilidad >= 0 ? <ArrowTrendingUpIcon /> : <ArrowTrendingDownIcon />,
+      color: rentabilidad >= 0 ? 'success' : 'error'
     }
   ];
 

@@ -161,7 +161,7 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
               <Grid item
                 xs={12}
                 md={6}>
-                <Box sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 1 }}>
+                <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: 1 }}>
                   <Typography variant="subtitle2"
                     gutterBottom>Costo Real</Typography>
                   <Stack spacing={1}>

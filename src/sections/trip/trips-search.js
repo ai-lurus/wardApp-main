@@ -13,7 +13,7 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
     if (field === 'status') setStatus(value);
     if (field === 'routeId') setRouteId(value);
     if (field === 'unitId') setUnitId(value);
-    
+
     onSearch({
       query: field === 'query' ? value : query,
       status: field === 'status' ? value : status,
@@ -24,7 +24,8 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
 
   return (
     <Card sx={{ p: 2 }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+      <Stack direction={{ xs: 'column', md: 'row' }}
+        spacing={2}>
         <TextField
           fullWidth
           placeholder="Buscar viaje..."
@@ -33,7 +34,8 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SvgIcon color="action" fontSize="small">
+                <SvgIcon color="action"
+                  fontSize="small">
                   <MagnifyingGlassIcon />
                 </SvgIcon>
               </InputAdornment>
@@ -41,7 +43,7 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
           }}
           sx={{ flexGrow: 1 }}
         />
-        
+
         <TextField
           select
           label="Estado"
@@ -65,7 +67,8 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
         >
           <MenuItem value="">Todas</MenuItem>
           {routes.map(r => (
-            <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+            <MenuItem key={r.id}
+              value={r.id}>{r.name}</MenuItem>
           ))}
         </TextField>
 
@@ -78,7 +81,8 @@ export const TripsSearch = ({ onSearch, routes, units }) => {
         >
           <MenuItem value="">Todas</MenuItem>
           {units.map(u => (
-            <MenuItem key={u.id} value={u.id}>{u.plate || u.matricula}</MenuItem>
+            <MenuItem key={u.id}
+              value={u.id}>{u.plate || u.matricula}</MenuItem>
           ))}
         </TextField>
       </Stack>

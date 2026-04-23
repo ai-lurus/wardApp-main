@@ -407,6 +407,48 @@ export const usersApi = {
     api.patch(`/users/${id}/status`, { active }).then((r) => normalizeUser(r.data)),
 };
 
+// ─── Operators ─────────────────────────────────────────
+
+const normalizeOperator = (o) => ({
+  id: o.id,
+  name: o.name,
+  licenseNumber: o.license_number,
+  licenseType: o.license_type,
+  licenseExpiry: o.license_expiry,
+  status: o.status,
+  phone: o.phone || '',
+  email: o.email || '',
+  createdAt: o.created_at,
+  documents: o.documents || [],
+});
+
+const toOperatorPayload = (values) => ({
+  name: values.name,
+  license_number: values.licenseNumber,
+  license_type: values.licenseType,
+  license_expiry: values.licenseExpiry,
+  status: values.status || undefined,
+  phone: values.phone || undefined,
+  email: values.email || undefined,
+});
+
+export const operatorsApi = {
+  list: (params = {}) =>
+    api.get('/operators', { params }).then((r) => r.data.map(normalizeOperator)),
+
+  get: (id) =>
+    api.get(`/operators/${id}`).then((r) => normalizeOperator(r.data)),
+
+  create: (data) =>
+    api.post('/operators', toOperatorPayload(data)).then((r) => normalizeOperator(r.data)),
+
+  update: (id, data) =>
+    api.put(`/operators/${id}`, toOperatorPayload(data)).then((r) => normalizeOperator(r.data)),
+
+  setStatus: (id, status) =>
+    api.patch(`/operators/${id}/status`, { status }).then((r) => normalizeOperator(r.data)),
+};
+
 // ─── Warehouse ─────────────────────────────────────────
 
 const normalizeZone = (z) => ({
