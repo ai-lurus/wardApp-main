@@ -10,5 +10,18 @@
         "maximum": 1
       }
     ]
+  },
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": [
+        "next/babel"
+      ]
+    }
+  },
+  "settings": {
+    "next": {
+      "rootDir": "./"
+    }
   }
 }

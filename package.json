@@ -24,11 +24,11 @@
     "@mui/system": "5.11.9",
     "@mui/x-date-pickers": "5.0.19",
     "apexcharts": "3.37.0",
-    "axios": "^1.6.2",
+    "axios": "^1.7.7",
     "date-fns": "2.29.3",
     "formik": "2.2.9",
     "i18next": "^23.7.6",
-    "next": "13.1.6",
+    "next": "^14.2.15",
     "nprogress": "0.2.0",
     "prop-types": "15.8.1",
     "react": "18.2.0",
@@ -47,6 +47,16 @@
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "eslint": "8.34.0",
-    "eslint-config-next": "13.1.6"
+    "eslint-config-next": "^14.2.15"
+  },
+  "overrides": {
+    "form-data": "^4.0.1",
+    "flatted": "^3.4.2",
+    "cross-spawn": "^7.0.6",
+    "braces": "^3.0.3",
+    "micromatch": "^4.0.8",
+    "lodash": "^4.17.24",
+    "lodash-es": "^4.17.24",
+    "minimatch": "^3.1.4"
   }
 }
