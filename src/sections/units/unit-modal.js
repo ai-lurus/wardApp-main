@@ -44,15 +44,17 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
     },
     validationSchema: Yup.object({
       matricula: Yup.string().required('La matrícula es requerida'),
-      marca: Yup.string(),
-      modelo: Yup.string(),
-      year: Yup.number().nullable(),
-      type: Yup.string(),
+      marca: Yup.string().required('La marca es requerida'),
+      modelo: Yup.string().required('El modelo es requerido'),
+      year: Yup.number().required('El año es requerido'),
+      type: Yup.string().required('El tipo de unidad es requerido'),
       axesNumber: Yup.number().min(2, 'Min 2').max(9, 'Max 9').required('El número de ejes es requerido'),
-      vin: Yup.string().length(17, 'El VIN debe tener exactamente 17 caracteres').nullable(),
-      fuelEfficiency: Yup.number().nullable(),
-      insuranceExpiration: Yup.string().nullable(),
-      lastMaintenance: Yup.string().nullable(),
+      vin: Yup.string()
+        .length(17, 'El VIN debe tener exactamente 17 caracteres')
+        .required('El VIN es requerido'),
+      fuelEfficiency: Yup.number().required('El rendimiento es requerido'),
+      insuranceExpiration: Yup.string().required('La fecha de vencimiento de seguro es requerida'),
+      lastMaintenance: Yup.string().required('La fecha de último mantenimiento es requerida'),
       notes: Yup.string().nullable(),
     }),
     onSubmit: (values) => {
@@ -75,6 +77,7 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
           <Stack spacing={2}>
             <TextField
               fullWidth
+              required
               id="matricula"
               label="Matrícula"
               name="matricula"
@@ -87,24 +90,31 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
             <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
+                required
                 id="marca"
                 label="Marca"
                 name="marca"
                 value={formik.values.marca}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.marca && Boolean(formik.errors.marca)}
+                helperText={formik.touched.marca && formik.errors.marca}
               />
               <TextField
                 fullWidth
+                required
                 id="modelo"
                 label="Modelo"
                 name="modelo"
                 value={formik.values.modelo}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.modelo && Boolean(formik.errors.modelo)}
+                helperText={formik.touched.modelo && formik.errors.modelo}
               />
               <TextField
                 fullWidth
+                required
                 id="year"
                 label="Año"
                 type="number"
@@ -112,6 +122,8 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
                 value={formik.values.year}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.year && Boolean(formik.errors.year)}
+                helperText={formik.touched.year && formik.errors.year}
               />
             </Stack>
 
@@ -119,6 +131,7 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
               <TextField
                 fullWidth
                 select
+                required
                 label="Tipo de unidad"
                 name="type"
                 InputLabelProps={{ htmlFor: '' }}
@@ -126,6 +139,8 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
                 value={formik.values.type}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.type && Boolean(formik.errors.type)}
+                helperText={formik.touched.type && formik.errors.type}
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {UNIT_TYPES.map((t) => (
@@ -138,6 +153,7 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
               <TextField
                 fullWidth
                 select
+                required
                 label="Número de ejes"
                 name="axesNumber"
                 InputLabelProps={{ htmlFor: '' }}
@@ -159,16 +175,21 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
 
             <TextField
               fullWidth
+              required
               id="vin"
               label="VIN"
               name="vin"
+              inputProps={{ maxLength: 17 }}
               value={formik.values.vin}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              error={formik.touched.vin && Boolean(formik.errors.vin)}
+              helperText={formik.touched.vin && formik.errors.vin}
             />
 
             <TextField
               fullWidth
+              required
               id="fuelEfficiency"
               label="Rendimiento (km/l)"
               type="number"
@@ -177,11 +198,14 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
               value={formik.values.fuelEfficiency}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              error={formik.touched.fuelEfficiency && Boolean(formik.errors.fuelEfficiency)}
+              helperText={formik.touched.fuelEfficiency && formik.errors.fuelEfficiency}
             />
 
             <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
+                required
                 id="insuranceExpiration"
                 label="Vencimiento de seguro"
                 type="date"
@@ -190,9 +214,12 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
                 value={formik.values.insuranceExpiration}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.insuranceExpiration && Boolean(formik.errors.insuranceExpiration)}
+                helperText={formik.touched.insuranceExpiration && formik.errors.insuranceExpiration}
               />
               <TextField
                 fullWidth
+                required
                 id="lastMaintenance"
                 label="Fecha último mantenimiento"
                 type="date"
@@ -201,6 +228,8 @@ export const UnitModal = ({ open, onClose, onSave, unit }) => {
                 value={formik.values.lastMaintenance}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                error={formik.touched.lastMaintenance && Boolean(formik.errors.lastMaintenance)}
+                helperText={formik.touched.lastMaintenance && formik.errors.lastMaintenance}
               />
             </Stack>
 
