@@ -92,7 +92,6 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
                 sx={{ mt: 1 }}>
                 <Chip label={status.label}
                   color={status.color} />
-
                 {data.status === 'programado' && (
                   <Button variant="outlined"
                     size="small"

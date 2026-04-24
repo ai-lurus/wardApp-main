@@ -823,6 +823,7 @@ const toUpdateTripStatusPayload = (values) => ({
   actual_tollbooth_cost: values.actualTollboothCost !== undefined ? Number(values.actualTollboothCost) : undefined,
   actual_fuel_cost: values.actualFuelCost !== undefined ? Number(values.actualFuelCost) : undefined,
   actual_extras_cost: values.actualExtrasCost !== undefined ? Number(values.actualExtrasCost) : undefined,
+  entry_cost: values.entryCost !== undefined ? Number(values.entryCost) : undefined,
 });
 
 export const tripsApi = {
