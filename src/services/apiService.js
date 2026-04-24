@@ -763,66 +763,96 @@ export const tollboothsApi = {
     api.delete(`/tollbooths/${id}`).then((r) => r.data),
 };
 
-// ─── Trips (Mocked MVP) ────────────────────────────────
+// ─── Trips ─────────────────────────────────────────────
 
-let _mockTrips = [];
+const normalizeTripCostDetail = (c) => {
+  if (!c) return null;
+  return {
+    id: c.id,
+    tripId: c.trip_id,
+    tollboothCost: c.tollbooth_cost,
+    fuelCost: c.fuel_cost,
+    fuelType: c.fuel_type,
+    extrasCost: c.extras_cost,
+    estimatedTollboothCost: c.estimated_tollbooth_cost,
+    estimatedFuelCost: c.estimated_fuel_cost,
+    estimatedExtrasCost: c.estimated_extras_cost,
+  };
+};
+
+const normalizeTrip = (t) => ({
+  id: t.id,
+  companyId: t.company_id,
+  routeId: t.route_id,
+  unitId: t.unit_id,
+  operatorId: t.operator_id,
+  status: t.status,
+  scheduledDate: t.scheduled_date,
+  departureTime: t.departure_time,
+  arrivalTime: t.arrival_time,
+  estimatedCost: t.estimated_cost,
+  actualCost: t.actual_cost,
+  notes: t.notes,
+  entryCost: t.entry_cost,
+  createdAt: t.created_at,
+  updatedAt: t.updated_at,
+  costDetail: normalizeTripCostDetail(t.cost_detail),
+  route: t.route ? normalizeRoute(t.route) : null,
+  unit: t.unit ? normalizeUnit(t.unit) : null,
+  operator: t.operator ? normalizeOperator(t.operator) : null,
+});
+
+const toTripPayload = (values) => ({
+  route_id: values.routeId,
+  unit_id: values.unitId,
+  operator_id: values.operatorId,
+  scheduled_date: new Date(values.scheduledDate).toISOString(),
+  notes: values.notes || undefined,
+  entry_cost: values.entryCost !== undefined ? Number(values.entryCost) : undefined,
+  tollbooth_cost: values.tollboothCost !== undefined ? Number(values.tollboothCost) : undefined,
+  fuel_cost: values.fuelCost !== undefined ? Number(values.fuelCost) : undefined,
+  extras_cost: values.extrasCost !== undefined ? Number(values.extrasCost) : undefined,
+  estimated_tollbooth_cost: values.estimatedTollboothCost !== undefined ? Number(values.estimatedTollboothCost) : undefined,
+  estimated_fuel_cost: values.estimatedFuelCost !== undefined ? Number(values.estimatedFuelCost) : undefined,
+  estimated_extras_cost: values.estimatedExtrasCost !== undefined ? Number(values.estimatedExtrasCost) : undefined,
+  fuel_type: values.fuelType || undefined,
+});
+
+const toUpdateTripStatusPayload = (values) => ({
+  status: values.status,
+  actual_tollbooth_cost: values.actualTollboothCost !== undefined ? Number(values.actualTollboothCost) : undefined,
+  actual_fuel_cost: values.actualFuelCost !== undefined ? Number(values.actualFuelCost) : undefined,
+  actual_extras_cost: values.actualExtrasCost !== undefined ? Number(values.actualExtrasCost) : undefined,
+});
 
 export const tripsApi = {
-  list: async (params = {}) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    let items = [..._mockTrips];
-    
-    // Apply filters
-    if (params.status) items = items.filter(t => t.status === params.status);
-    if (params.routeId) items = items.filter(t => t.routeId === params.routeId);
-    if (params.unitId) items = items.filter(t => t.unitId === params.unitId);
-    if (params.operatorId) items = items.filter(t => t.operatorId === params.operatorId);
-
-    // Global search mock
-    if (params.query) {
-      const q = params.query.toLowerCase();
-      items = items.filter(t => 
-        (t.route?.name || '').toLowerCase().includes(q) ||
-        (t.unit?.plate || '').toLowerCase().includes(q) ||
-        (t.operator?.name || '').toLowerCase().includes(q)
-      );
-    }
-
-    return items;
-  },
-
-  get: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const trip = _mockTrips.find(t => t.id === id);
-    if (!trip) throw new Error('Viaje no encontrado');
-    return trip;
-  },
-
-  create: async (payload) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const newTrip = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...payload,
-      status: 'programado',
-      createdAt: new Date().toISOString(),
+  list: (params = {}) => {
+    const apiParams = {
+      ...params,
+      route_id: params.routeId,
+      unit_id: params.unitId,
+      operator_id: params.operatorId,
+      from_date: params.fromDate,
+      to_date: params.toDate,
     };
-    _mockTrips = [newTrip, ..._mockTrips];
-    return newTrip;
+    
+    delete apiParams.routeId;
+    delete apiParams.unitId;
+    delete apiParams.operatorId;
+    delete apiParams.fromDate;
+    delete apiParams.toDate;
+    
+    return api.get('/trips', { params: apiParams }).then((r) => r.data.map(normalizeTrip));
   },
 
-  updateStatus: async (id, status, payload = {}) => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    const index = _mockTrips.findIndex(t => t.id === id);
-    if (index === -1) throw new Error('Viaje no encontrado');
-    
-    _mockTrips[index] = {
-      ..._mockTrips[index],
-      status,
-      ...payload,
-      updatedAt: new Date().toISOString()
-    };
-    return _mockTrips[index];
-  }
+  get: (id) =>
+    api.get(`/trips/${id}`).then((r) => normalizeTrip(r.data)),
+
+  create: (values) =>
+    api.post('/trips', toTripPayload(values)).then((r) => normalizeTrip(r.data)),
+
+  updateStatus: (id, status, payload = {}) =>
+    api.patch(`/trips/${id}/status`, toUpdateTripStatusPayload({ status, ...payload })).then((r) => normalizeTrip(r.data)),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────

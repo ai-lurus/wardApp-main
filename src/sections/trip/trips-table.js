@@ -31,6 +31,7 @@ export const TripsTable = (props) => {
               <TableCell>Unidad</TableCell>
               <TableCell>Operador</TableCell>
               <TableCell>Costo Estimado</TableCell>
+              <TableCell>Costo Real</TableCell>
               <TableCell>Ingresos</TableCell>
               <TableCell>Rentabilidad</TableCell>
               <TableCell>Estado</TableCell>
@@ -40,7 +41,9 @@ export const TripsTable = (props) => {
           <TableBody>
             {items.map((trip) => {
               const status = statusMap[trip.status] || { color: 'default', label: trip.status };
-              const totalCost = trip.estimatedCost?.total || 0;
+              const estimatedCost = trip.estimatedCost || 0;
+              const revenue = trip.entryCost || 0;
+              const actualCost = trip.actualCost || 0;
 
               return (
                 <TableRow hover
@@ -62,13 +65,13 @@ export const TripsTable = (props) => {
                     {trip.operator?.name || 'No asignado'}
                   </TableCell>
                   <TableCell>
-                    ${totalCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    ${estimatedCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </TableCell>
                   <TableCell>
-                    {trip.status === 'completado' && trip.actualCost?.revenue ? (
+                    {trip.status === 'completado' && actualCost > 0 ? (
                       <Typography variant="body2"
                         fontWeight="bold">
-                        ${trip.actualCost.revenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                        ${actualCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                       </Typography>
                     ) : (
                       <Typography variant="body2"
@@ -76,13 +79,24 @@ export const TripsTable = (props) => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {trip.status === 'completado' && trip.actualCost?.revenue ? (
+                    {trip.status === 'completado' && revenue > 0 ? (
+                      <Typography variant="body2"
+                        fontWeight="bold">
+                        ${revenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2"
+                        color="text.secondary">--</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {trip.status === 'completado' && revenue > 0 ? (
                       <Typography
                         variant="body2"
                         fontWeight="bold"
-                        color={((trip.actualCost.revenue - trip.actualCost.total) / trip.actualCost.revenue) >= 0 ? 'success.main' : 'error.main'}
+                        color={((revenue - actualCost) / revenue) >= 0 ? 'success.main' : 'error.main'}
                       >
-                        {(((trip.actualCost.revenue - trip.actualCost.total) / trip.actualCost.revenue) * 100).toFixed(1)}%
+                        {(((revenue - actualCost) / revenue) * 100).toFixed(1)}%
                       </Typography>
                     ) : (
                       <Typography variant="body2"

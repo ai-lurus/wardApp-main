@@ -41,12 +41,12 @@ export const TripsSection = () => {
 
   const fetchTrips = useCallback(async () => {
     try {
-      const data = await tripsApi.list(filters);
+      const data = await tripsApi.list();
       setTrips(data);
     } catch (err) {
       console.error('Error fetching trips:', err);
     }
-  }, [filters]);
+  }, []);
 
   useEffect(() => {
     fetchDependencies();

@@ -4,7 +4,7 @@ import {
   Stepper, Step, StepLabel, Box, Stack, MenuItem,
   TextField, Typography, CircularProgress, Divider, Paper, Alert, InputAdornment
 } from '@mui/material';
-import { routesApi, tripsApi, unitsApi } from 'src/services/apiService';
+import { routesApi, tripsApi } from 'src/services/apiService';
 
 const steps = ['Asignación', 'Desglose de Costos', 'Confirmación'];
 
@@ -22,6 +22,7 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   // Cost Preview State
   const [routeDetails, setRouteDetails] = useState(null);
   const [adHocExtras, setAdHocExtras] = useState("");
+  const [fuelCostEst, setFuelCostEst] = useState("");
 
   // Available options
   const availableUnits = units.filter(u => u.status === 'disponible');
@@ -91,23 +92,12 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
         unitId,
         operatorId,
         scheduledDate,
-        route: selectedRoute,
-        unit: selectedUnit,
-        operator: selectedOperator,
-        estimatedCost: {
-          tolls: tollsTotal,
-          fuel: 0,
-          insurance: 0,
-          extras: Number(adHocExtras) || 0,
-          total: tollsTotal + (Number(adHocExtras) || 0)
-        }
+        estimatedTollboothCost: tollsTotal,
+        estimatedFuelCost: Number(fuelCostEst) || 0,
+        estimatedExtrasCost: Number(adHocExtras) || 0,
       };
 
       const newTrip = await tripsApi.create(payload);
-
-      // Update unit status mock
-      await unitsApi.updateStatus(unitId, 'en_viaje').catch(e => console.warn('Could not update unit status', e));
-
       onSuccess(newTrip);
     } catch (err) {
       console.error(err);
@@ -224,15 +214,23 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
               )}
               <Stack direction="row"
                 justifyContent="space-between"
+                alignItems="center"
                 sx={{ mb: 1 }}>
-                <Typography color="text.secondary">Combustible (Est.)</Typography>
-                <Typography>$0.00</Typography>
-              </Stack>
-              <Stack direction="row"
-                justifyContent="space-between"
-                sx={{ mb: 1 }}>
-                <Typography color="text.secondary">Seguro de Carga</Typography>
-                <Typography>$0.00</Typography>
+                <Typography variant="subtitle2">Combustible (Est.)</Typography>
+                <TextField
+                  size="small"
+                  type="number"
+                  value={fuelCostEst}
+                  onChange={(e) => setFuelCostEst(e.target.value)}
+                  sx={{ width: 120 }}
+                  hiddenLabel
+                  InputProps={{ 
+                    startAdornment: <InputAdornment position="start">$</InputAdornment> 
+                  }}
+                  inputProps={{
+                    sx: { py: 1, textAlign: 'right' }
+                  }}
+                />
               </Stack>
               <Divider sx={{ my: 1 }} />
               <Stack direction="row"
@@ -258,7 +256,7 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
           </Stack>
         );
       case 2:
-        const total = calculateTollsTotal() + (Number(adHocExtras) || 0);
+        const total = calculateTollsTotal() + (Number(fuelCostEst) || 0) + (Number(adHocExtras) || 0);
         return (
           <Stack spacing={3}
             sx={{ mt: 2 }}>

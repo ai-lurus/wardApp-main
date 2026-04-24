@@ -6,33 +6,20 @@ import {
 import { tripsApi, unitsApi } from 'src/services/apiService';
 
 export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
-  const [arrivalTime, setArrivalTime] = useState('');
-  const [fuelCost, setFuelCost] = useState(trip?.estimatedCost?.fuel || '');
-  const [extrasCost, setExtrasCost] = useState(trip?.estimatedCost?.extras || '');
-  const [revenue, setRevenue] = useState('');
+  const [fuelCost, setFuelCost] = useState(trip?.costDetail?.estimatedFuelCost || '');
+  const [extrasCost, setExtrasCost] = useState(trip?.costDetail?.estimatedExtrasCost || '');
   const [loading, setLoading] = useState(false);
 
   const handleCloseTrip = async () => {
     setLoading(true);
     try {
-      const tolls = trip.estimatedCost?.tolls || 0;
-      const actualCost = {
-        tolls,
-        fuel: Number(fuelCost),
-        extras: Number(extrasCost),
-        total: tolls + Number(fuelCost) + Number(extrasCost),
-        revenue: Number(revenue)
-      };
+      const actualTollboothCost = trip?.costDetail?.estimatedTollboothCost || 0;
 
       await tripsApi.updateStatus(trip.id, 'completado', {
-        arrivalTime,
-        actualCost
+        actualTollboothCost,
+        actualFuelCost: Number(fuelCost),
+        actualExtrasCost: Number(extrasCost)
       });
-
-      // Update unit status back to 'disponible'
-      if (trip.unitId) {
-        await unitsApi.updateStatus(trip.unitId, 'disponible').catch(e => console.warn('Could not free unit', e));
-      }
 
       onSuccess();
     } catch (err) {
@@ -52,17 +39,8 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
         <Stack spacing={3}>
           <Typography variant="body2"
             color="text.secondary">
-            Registra los costos reales y la hora de llegada para finalizar el viaje.
+            Registra los costos reales para finalizar el viaje. La hora de llegada se registrará automáticamente.
           </Typography>
-          <TextField
-            label="Hora de Llegada"
-            type="datetime-local"
-            InputLabelProps={{ shrink: true }}
-            value={arrivalTime}
-            onChange={(e) => setArrivalTime(e.target.value)}
-            fullWidth
-            required
-          />
           <TextField
             label="Costo Combustible (Real)"
             type="number"
@@ -93,25 +71,10 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
             }}
             fullWidth
           />
-          <TextField
-            label="Ingresos del Viaje (Facturado)"
-            type="number"
-            value={revenue}
-            onChange={(e) => setRevenue(e.target.value)}
-            InputProps={{
-              startAdornment: <InputAdornment
-                position="start"
-                sx={{
-                  transform: "translateY(4px)"
-                }}
-              >$</InputAdornment>,
-            }}
-            fullWidth
-            required
-          />
+
           <Typography variant="subtitle2"
             sx={{ mt: 2 }}>
-            Casetas: ${trip?.estimatedCost?.tolls?.toLocaleString('es-MX')} (Planificado)
+            Casetas: ${trip?.costDetail?.estimatedTollboothCost?.toLocaleString('es-MX')} (Planificado)
           </Typography>
         </Stack>
       </DialogContent>
@@ -121,7 +84,7 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
         <Button
           onClick={handleCloseTrip}
           variant="contained"
-          disabled={loading || !arrivalTime || revenue === ''}
+          disabled={loading}
         >
           Confirmar y Cerrar
         </Button>
