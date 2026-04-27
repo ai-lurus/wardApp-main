@@ -15,11 +15,11 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
   const handleCloseTrip = async () => {
     setLoading(true);
     try {
-      await tripsApi.updateStatus(trip.id, 'completado', {
-        actualTollboothCost: Number(tollboothCost),
-        actualFuelCost: Number(fuelCost),
-        actualExtrasCost: Number(extrasCost),
-        entryCost: Number(revenue)
+      await tripsApi.complete(trip.id, {
+        actualTollboothCost: tollboothCost,
+        actualFuelCost: fuelCost,
+        actualExtrasCost: extrasCost,
+        entryCost: revenue
       });
 
       onSuccess();

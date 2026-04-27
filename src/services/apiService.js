@@ -818,12 +818,15 @@ const toTripPayload = (values) => ({
   fuel_type: values.fuelType || undefined,
 });
 
-const toUpdateTripStatusPayload = (values) => ({
-  status: values.status,
-  actual_tollbooth_cost: values.actualTollboothCost !== undefined ? Number(values.actualTollboothCost) : undefined,
-  actual_fuel_cost: values.actualFuelCost !== undefined ? Number(values.actualFuelCost) : undefined,
-  actual_extras_cost: values.actualExtrasCost !== undefined ? Number(values.actualExtrasCost) : undefined,
-  entry_cost: values.entryCost !== undefined ? Number(values.entryCost) : undefined,
+const toUpdateTripStatusPayload = (status) => ({
+  status,
+});
+
+const toCompleteTripPayload = (values) => ({
+  actual_tollbooth_cost: Number(values.actualTollboothCost),
+  actual_fuel_cost: Number(values.actualFuelCost),
+  actual_extras_cost: Number(values.actualExtrasCost),
+  entry_cost: Number(values.entryCost),
 });
 
 export const tripsApi = {
@@ -852,8 +855,11 @@ export const tripsApi = {
   create: (values) =>
     api.post('/trips', toTripPayload(values)).then((r) => normalizeTrip(r.data)),
 
-  updateStatus: (id, status, payload = {}) =>
-    api.patch(`/trips/${id}/status`, toUpdateTripStatusPayload({ status, ...payload })).then((r) => normalizeTrip(r.data)),
+  updateStatus: (id, status) =>
+    api.patch(`/trips/${id}/status`, toUpdateTripStatusPayload(status)).then((r) => normalizeTrip(r.data)),
+
+  complete: (id, values) =>
+    api.patch(`/trips/${id}/completed`, toCompleteTripPayload(values)).then((r) => normalizeTrip(r.data)),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
