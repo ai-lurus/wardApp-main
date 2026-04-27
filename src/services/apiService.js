@@ -232,6 +232,41 @@ const toUnitPayload = (values) => ({
   status: values.status || undefined,
 });
 
+const normalizeOperatorDocument = (d) => ({
+  id: d.id,
+  operatorId: d.operator_id,
+  documentType: d.document_type,
+  fileUrl: d.file_url,
+  signedUrl: d.signed_url || null,
+  expiryDate: d.expiry_date,
+  createdAt: d.created_at,
+});
+
+const normalizeOperator = (o) => ({
+  id: o.id,
+  companyId: o.company_id,
+  name: o.name,
+  licenseNumber: o.license_number,
+  licenseType: o.license_type,
+  licenseExpiry: o.license_expiry,
+  status: o.status,
+  phone: o.phone || '',
+  email: o.email || '',
+  createdAt: o.created_at,
+  updatedAt: o.updated_at,
+  documents: o.documents ? o.documents.map(normalizeOperatorDocument) : [],
+});
+
+const toOperatorPayload = (values) => ({
+  name: values.name,
+  license_number: values.licenseNumber,
+  license_type: values.licenseType,
+  license_expiry: values.licenseExpiry,
+  status: values.status || undefined,
+  phone: values.phone || undefined,
+  email: values.email || undefined,
+});
+
 const toTollboothPayload = (values) => ({
   name: values.name,
   cost_2_axles: Number(values.cost2Axles) || undefined,
@@ -333,6 +368,39 @@ export const unitsApi = {
 
   getAlertsInsurance: () =>
     api.get('/units/alerts/insurance').then((r) => r.data.map(normalizeUnit)),
+};
+
+// ─── Operators ─────────────────────────────────────────
+
+export const operatorsApi = {
+  list: (params = {}) =>
+    api.get('/operators', { params }).then((r) => r.data.map(normalizeOperator)),
+
+  get: (id) =>
+    api.get(`/operators/${id}`).then((r) => normalizeOperator(r.data)),
+
+  create: (values) =>
+    api.post('/operators', toOperatorPayload(values)).then((r) => normalizeOperator(r.data)),
+
+  update: (id, values) =>
+    api.put(`/operators/${id}`, toOperatorPayload(values)).then((r) => normalizeOperator(r.data)),
+
+  updateStatus: (id, status) =>
+    api.patch(`/operators/${id}/status`, { status }).then((r) => normalizeOperator(r.data)),
+
+  delete: (id) =>
+    api.delete(`/operators/${id}`).then((r) => r.data),
+
+  uploadDocument: (id, formData) =>
+    api.post(`/operators/${id}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => normalizeOperatorDocument(r.data)),
+
+  deleteDocument: (id, docId) =>
+    api.delete(`/operators/${id}/documents/${docId}`).then((r) => r.data),
+
+  getAlertsExpiringDocuments: () =>
+    api.get('/operators/alerts/expiring-documents').then((r) => r.data.map(normalizeOperatorDocument)),
 };
 
 // ─── Categories ────────────────────────────────────────
