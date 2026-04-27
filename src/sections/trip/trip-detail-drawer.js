@@ -155,14 +155,21 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
               spacing={2}>
               <Grid item
                 xs={12}
-                sm={6}>
+                sm={4}>
                 <Typography variant="subtitle2"
                   color="text.secondary">Salida Programada</Typography>
                 <Typography>{data.scheduledDate || data.createdAt ? format(new Date(data.scheduledDate || data.createdAt), 'dd/MM/yyyy HH:mm') : '--'}</Typography>
               </Grid>
               <Grid item
                 xs={12}
-                sm={6}>
+                sm={4}>
+                <Typography variant="subtitle2"
+                  color="text.secondary">Salida (Real)</Typography>
+                <Typography>{(data.status === 'en_curso' || data.status === 'completado') && data.departureTime ? format(new Date(data.departureTime), 'dd/MM/yyyy HH:mm') : '--'}</Typography>
+              </Grid>
+              <Grid item
+                xs={12}
+                sm={4}>
                 <Typography variant="subtitle2"
                   color="text.secondary">Llegada (Real)</Typography>
                 <Typography>{data.status === 'completado' && data.arrivalTime ? format(new Date(data.arrivalTime), 'dd/MM/yyyy HH:mm') : '--'}</Typography>
