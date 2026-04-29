@@ -135,7 +135,10 @@ export const OperatorModal = ({ open, onClose, operator, onSave }) => {
                 label="Teléfono"
                 name="phone"
                 value={formik.values.phone}
-                onChange={formik.handleChange}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  formik.setFieldValue('phone', value);
+                }}
                 onBlur={formik.handleBlur}
                 error={formik.touched.phone && Boolean(formik.errors.phone)}
                 helperText={formik.touched.phone && formik.errors.phone}

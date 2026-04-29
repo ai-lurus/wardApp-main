@@ -54,6 +54,21 @@ export const OperatorDetailDrawer = ({ open, onClose, operatorId }) => {
 
   const handleUpload = async () => {
     if (!selectedFile || !docType) return;
+
+    // Validate size (50MB)
+    const MAX_SIZE = 50 * 1024 * 1024;
+    if (selectedFile.size > MAX_SIZE) {
+      alert('El archivo es demasiado grande. El límite es de 50MB.');
+      return;
+    }
+
+    // Validate type
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      alert('Tipo de archivo no permitido. Solo se aceptan JPG, PNG y PDF.');
+      return;
+    }
+
     setUploading(true);
     try {
       const formData = new FormData();
@@ -187,6 +202,7 @@ export const OperatorDetailDrawer = ({ open, onClose, operatorId }) => {
                 <input
                   type="file"
                   hidden
+                  accept=".jpg,.jpeg,.png,.pdf"
                   onChange={(e) => setSelectedFile(e.target.files[0])}
                 />
               </Button>
