@@ -4,20 +4,22 @@ import ArrowsRightLeftIcon from '@heroicons/react/24/solid/ArrowsRightLeftIcon';
 import CheckCircleIcon from '@heroicons/react/24/solid/CheckCircleIcon';
 import ArrowTrendingUpIcon from '@heroicons/react/24/solid/ArrowTrendingUpIcon';
 import ArrowTrendingDownIcon from '@heroicons/react/24/solid/ArrowTrendingDownIcon';
+import XCircleIcon from '@heroicons/react/24/solid/XCircleIcon';
 
 export const TripsSummary = ({ trips = [] }) => {
   // Calculos de ejemplo usando los datos de la tabla
   const totalViajes = trips.length;
   const enTransito = trips.filter(t => t.status === 'en_curso').length;
   const completados = trips.filter(t => t.status === 'completado').length;
+  const cancelados = trips.filter(t => t.status === 'cancelado').length;
 
   // Rentabilidad Promedio: Diferencia entre ingresos facturados y costo real de la operación
   let rentabilidad = 0;
-  const tripsCompletados = trips.filter(t => t.status === 'completado' && t.actualCost?.revenue);
+  const tripsCompletados = trips.filter(t => t.status === 'completado' && t.entryCost > 0);
 
   if (tripsCompletados.length > 0) {
-    const totalRevenue = tripsCompletados.reduce((acc, t) => acc + (t.actualCost.revenue || 0), 0);
-    const totalReal = tripsCompletados.reduce((acc, t) => acc + (t.actualCost.total || 0), 0);
+    const totalRevenue = tripsCompletados.reduce((acc, t) => acc + (t.entryCost || 0), 0);
+    const totalReal = tripsCompletados.reduce((acc, t) => acc + (t.actualCost || 0), 0);
     
     if (totalRevenue > 0) {
       rentabilidad = ((totalRevenue - totalReal) / totalRevenue) * 100;
@@ -45,6 +47,12 @@ export const TripsSummary = ({ trips = [] }) => {
       value: completados.toString(),
       icon: <CheckCircleIcon />,
       color: 'success'
+    },
+    {
+      title: 'CANCELADOS',
+      value: cancelados.toString(),
+      icon: <XCircleIcon />,
+      color: 'error'
     },
     {
       title: 'RENTABILIDAD PROMEDIO',
@@ -92,7 +100,8 @@ export const TripsSummary = ({ trips = [] }) => {
         gridTemplateColumns: {
           xs: 'repeat(1, 1fr)',
           sm: 'repeat(2, 1fr)',
-          md: 'repeat(4, 1fr)'
+          md: 'repeat(3, 1fr)',
+          lg: 'repeat(5, 1fr)'
         }
       }}
     >

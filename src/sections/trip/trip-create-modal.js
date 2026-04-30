@@ -23,6 +23,7 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   const [routeDetails, setRouteDetails] = useState(null);
   const [adHocExtras, setAdHocExtras] = useState("");
   const [fuelCostEst, setFuelCostEst] = useState("");
+  const [dieselPrice, setDieselPrice] = useState("");
 
   // Available options
   const availableUnits = units.filter(u => u.status === 'disponible');
@@ -31,6 +32,19 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   const selectedRoute = routes.find(r => r.id === routeId);
   const selectedUnit = units.find(u => u.id === unitId);
   const selectedOperator = operators.find(u => u.id === operatorId);
+
+  useEffect(() => {
+    const distance = routeDetails?.distanceKm || selectedRoute?.distanceKm || 0;
+    const efficiency = parseFloat(selectedUnit?.fuelEfficiency) || 0;
+
+    if (distance > 0 && efficiency > 0 && dieselPrice) {
+      const litersNeeded = distance / efficiency;
+      const calculatedFuelCost = (Number(dieselPrice) || 0) * litersNeeded;
+      setFuelCostEst(calculatedFuelCost.toFixed(2));
+    } else {
+      setFuelCostEst("");
+    }
+  }, [dieselPrice, routeDetails, selectedRoute, selectedUnit, setFuelCostEst]);
 
   const fetchCostPreview = async () => {
     const axles = selectedUnit?.axles || selectedUnit?.axesNumber;
@@ -216,22 +230,75 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
                 justifyContent="space-between"
                 alignItems="center"
                 sx={{ mb: 1 }}>
-                <Typography variant="subtitle2">Combustible (Est.)</Typography>
+                <Typography variant="subtitle2">Precio Diesel/L</Typography>
                 <TextField
                   size="small"
                   type="number"
-                  value={fuelCostEst}
-                  onChange={(e) => setFuelCostEst(e.target.value)}
+                  value={dieselPrice}
+                  onChange={(e) => setDieselPrice(e.target.value)}
                   sx={{ width: 120 }}
                   hiddenLabel
-                  InputProps={{ 
-                    startAdornment: <InputAdornment position="start">$</InputAdornment> 
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>
                   }}
                   inputProps={{
                     sx: { py: 1, textAlign: 'right' }
                   }}
                 />
               </Stack>
+
+              {/* {fuelCostEst > 0 && ( */}
+              <Box sx={{
+                pl: 2,
+                pr: 1,
+                py: 1.5,
+                mb: 2,
+                bgcolor: 'action.hover',
+                borderRadius: 1,
+                borderLeft: '4px solid',
+                borderColor: 'primary.main'
+              }}>
+                <Stack direction="row"
+                  justifyContent="space-between"
+                  alignItems="center">
+                  <Box>
+                    <Typography variant="caption"
+                      color="text.secondary"
+                      fontWeight="bold"
+                      display="block">
+                      Información de Consumo:
+                    </Typography>
+                    <Typography variant="caption"
+                      color="text.secondary"
+                      display="block">
+                      Distancia: {routeDetails?.distanceKm || selectedRoute?.distanceKm || 0} km
+                    </Typography>
+                    <Typography variant="caption"
+                      color="text.secondary"
+                      display="block">
+                      Rendimiento: {selectedUnit?.fuelEfficiency || 0} km/L
+                    </Typography>
+                    <Typography variant="caption"
+                      color="primary.main"
+                      fontWeight="medium">
+                      Lts. Calculados: {((routeDetails?.distanceKm || selectedRoute?.distanceKm || 0) / (parseFloat(selectedUnit?.fuelEfficiency) || 1)).toFixed(2)} L
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="caption"
+                      color="text.secondary"
+                      display="block">
+                      Gasto Estimado
+                    </Typography>
+                    <Typography variant="subtitle1"
+                      color="primary.main"
+                      fontWeight="bold">
+                      ${Number(fuelCostEst).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+              {/* )} */}
               <Divider sx={{ my: 1 }} />
               <Stack direction="row"
                 justifyContent="space-between"
@@ -244,8 +311,8 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
                   onChange={(e) => setAdHocExtras(e.target.value)}
                   sx={{ width: 120 }}
                   hiddenLabel
-                  InputProps={{ 
-                    startAdornment: <InputAdornment position="start">$</InputAdornment> 
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>
                   }}
                   inputProps={{
                     sx: { py: 1, textAlign: 'right' } // py: 1 ensures vertical center, textAlign right is standard for currency
