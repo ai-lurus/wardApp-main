@@ -120,6 +120,15 @@ export const items = [
     ),
     children: [
       {
+        title: 'Operadores',
+        path: '/operators',
+        icon: (
+          <SvgIcon fontSize="small">
+            <UserGroupIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: 'Rutas y Casetas',
         path: '/routes',
         icon: (
