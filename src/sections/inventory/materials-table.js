@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Chip,
   Stack,
@@ -17,6 +19,9 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { StockLevelBar, getStockStatus } from 'src/components/stock-level-bar';
 import { useTranslation } from 'react-i18next';
 import { SecureImage } from 'src/components/secure-image';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
+import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 
 const statusChipConfig = {
   inStock: { label: 'inStock', color: 'success' },
@@ -62,7 +67,8 @@ export const MaterialsTable = (props) => {
                 const chipConfig = statusChipConfig[status];
 
                 return (
-                  <TableRow hover key={material.id}>
+                  <TableRow hover
+                    key={material.id}>
                     <TableCell>
                       <SecureImage
                         path={material.imageUrl || null}
@@ -73,14 +79,16 @@ export const MaterialsTable = (props) => {
                     <TableCell>
                       <Typography variant="subtitle2">{material.name}</Typography>
                       {material.sku && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption"
+                          color="text.secondary">
                           {material.sku}
                         </Typography>
                       )}
                     </TableCell>
                     <TableCell>{material.categoryName}</TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2"
+                        color="text.secondary">
                         {material.location || '—'}
                       </Typography>
                     </TableCell>
@@ -102,22 +110,25 @@ export const MaterialsTable = (props) => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => onEdit(material)}
-                        >
-                          {t('edit')}
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color={material.active ? 'warning' : 'success'}
-                          onClick={() => onToggleActive(material.id)}
-                        >
-                          {material.active ? t('deactivate') : t('activate')}
-                        </Button>
+                      <Stack direction="row"
+                        spacing={1}>
+                        <Tooltip title={t('edit')}>
+                          <IconButton onClick={() => onEdit(material)}>
+                            <SvgIcon fontSize="small">
+                              <PencilIcon />
+                            </SvgIcon>
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={material.active ? t('deactivate') : t('activate')}>
+                          <IconButton
+                            color={material.active ? 'error' : 'success'}
+                            onClick={() => onToggleActive(material.id)}
+                          >
+                            <SvgIcon fontSize="small">
+                              {material.active ? <TrashIcon /> : <ArrowPathIcon />}
+                            </SvgIcon>
+                          </IconButton>
+                        </Tooltip>
                       </Stack>
                     </TableCell>
                   </TableRow>

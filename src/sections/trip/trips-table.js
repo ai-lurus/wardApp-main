@@ -110,7 +110,8 @@ export const TripsTable = (props) => {
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Ver Detalle">
-                      <IconButton onClick={() => onViewDetail(trip)}>
+                      <IconButton onClick={() => onViewDetail(trip)}
+                        color='info'>
                         <EyeIcon width={20} />
                       </IconButton>
                     </Tooltip>
