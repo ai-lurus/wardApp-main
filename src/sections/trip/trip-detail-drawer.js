@@ -4,6 +4,7 @@ import {
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
 import { format } from 'date-fns';
 import { TripCloseModal } from './trip-close-modal';
+import { TripCostComparison } from './trip-cost-comparison';
 import { ConfirmActionModal } from 'src/components/confirm-action-modal';
 import { useState, useEffect } from 'react';
 import { tripsApi } from 'src/services/apiService';
@@ -67,7 +68,7 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
         anchor="right"
         open={open}
         onClose={onClose}
-        PaperProps={{ sx: { width: { xs: '100%', md: 600 }, p: 3 } }}
+        PaperProps={{ sx: { width: { xs: '100%', md: 700 }, p: 3 } }}
       >
         <Stack direction="row"
           justifyContent="space-between"
@@ -180,71 +181,36 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
 
             <Typography variant="h6">Desglose de Costos</Typography>
 
-            <Grid container
-              spacing={0}
-              justifyContent="center">
-              <Grid item
-                xs={12}
-                md={data.status === 'completado' ? 6 : 12}
-                sx={{ p: 1.5 }}>
-                <Box sx={{
-                  p: 3,
-                  bgcolor: 'background.paper',
-                  borderRadius: 3,
-                  boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.03)',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  height: '100%'
-                }}>
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      fontWeight: 700,
-                      letterSpacing: 1.1,
-                      color: 'text.secondary',
-                      display: 'block',
-                      mb: 1
-                    }}
-                  >
-                    Costo Estimado
-                  </Typography>
-                  <Stack spacing={1}>
-                    <Stack direction="row"
-                      justifyContent="space-between">
-                      <Typography variant="body2">Casetas</Typography>
-                      <Typography variant="body2">${data.costDetail?.estimatedTollboothCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
-                    </Stack>
-                    <Stack direction="row"
-                      justifyContent="space-between">
-                      <Typography variant="body2">Combustible</Typography>
-                      <Typography variant="body2">${data.costDetail?.estimatedFuelCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
-                    </Stack>
-                    <Stack direction="row"
-                      justifyContent="space-between">
-                      <Typography variant="body2">Extras</Typography>
-                      <Typography variant="body2">${data.costDetail?.estimatedExtrasCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
-                    </Stack>
-                    <Divider sx={{ my: 1, borderBottomWidth: 1.5 }} />
-                    <Stack direction="row"
-                      justifyContent="space-between">
-                      <Typography variant="subtitle2">Total</Typography>
-                      <Typography variant="subtitle2">${data.estimatedCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
-                    </Stack>
-                  </Stack>
-                </Box>
-              </Grid>
-
-              {data.status === 'completado' && data.actualCost !== undefined && data.actualCost !== null && (
+            {data.status === 'completado' && data.actualCost !== undefined && data.actualCost !== null ? (
+              <TripCostComparison 
+                estimatedCosts={{
+                  tollbooth: data.costDetail?.estimatedTollboothCost,
+                  fuel: data.costDetail?.estimatedFuelCost,
+                  insurance: 0,
+                  extras: data.costDetail?.estimatedExtrasCost
+                }}
+                actualCosts={{
+                  tollbooth: data.costDetail?.tollboothCost,
+                  fuel: data.costDetail?.fuelCost,
+                  insurance: 0,
+                  extras: data.costDetail?.extrasCost
+                }}
+              />
+            ) : (
+              <Grid container
+                spacing={0}
+                justifyContent="center">
                 <Grid item
                   xs={12}
-                  md={6}
+                  md={12}
                   sx={{ p: 1.5 }}>
                   <Box sx={{
                     p: 3,
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
+                    bgcolor: 'background.paper',
                     borderRadius: 3,
-                    boxShadow: '0px 4px 20px rgba(99, 102, 241, 0.2)',
+                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.03)',
+                    border: '1px solid',
+                    borderColor: 'divider',
                     height: '100%'
                   }}>
                     <Typography
@@ -252,41 +218,40 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
                       sx={{
                         fontWeight: 700,
                         letterSpacing: 1.1,
-                        color: 'inherit',
+                        color: 'text.secondary',
                         display: 'block',
-                        mb: 1,
-                        opacity: 0.9
+                        mb: 1
                       }}
                     >
-                      Costo Real
+                      Costo Estimado
                     </Typography>
                     <Stack spacing={1}>
                       <Stack direction="row"
                         justifyContent="space-between">
                         <Typography variant="body2">Casetas</Typography>
-                        <Typography variant="body2">${data.costDetail?.tollboothCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
+                        <Typography variant="body2">${data.costDetail?.estimatedTollboothCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
                       </Stack>
                       <Stack direction="row"
                         justifyContent="space-between">
                         <Typography variant="body2">Combustible</Typography>
-                        <Typography variant="body2">${data.costDetail?.fuelCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
+                        <Typography variant="body2">${data.costDetail?.estimatedFuelCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
                       </Stack>
                       <Stack direction="row"
                         justifyContent="space-between">
                         <Typography variant="body2">Extras</Typography>
-                        <Typography variant="body2">${data.costDetail?.extrasCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
+                        <Typography variant="body2">${data.costDetail?.estimatedExtrasCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
                       </Stack>
-                      <Divider sx={{ borderColor: 'rgba(255,255,255,0.3)', my: 1, borderBottomWidth: 1.5 }} />
+                      <Divider sx={{ my: 1, borderBottomWidth: 1.5 }} />
                       <Stack direction="row"
                         justifyContent="space-between">
                         <Typography variant="subtitle2">Total</Typography>
-                        <Typography variant="subtitle2">${data.actualCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
+                        <Typography variant="subtitle2">${data.estimatedCost?.toLocaleString('es-MX', { minimumFractionDigits: 2 }) || 0}</Typography>
                       </Stack>
                     </Stack>
                   </Box>
                 </Grid>
-              )}
-            </Grid>
+              </Grid>
+            )}
 
           </Stack>
         )}
