@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Table,
   TableBody,
@@ -13,6 +15,7 @@ import {
 import { Scrollbar } from 'src/components/scrollbar';
 import { SeverityPill } from 'src/components/severity-pill';
 import { useTranslation } from 'react-i18next';
+import ArchiveBoxArrowDownIcon from '@heroicons/react/24/solid/ArchiveBoxArrowDownIcon';
 
 export const AlertsTable = ({ items = [], onRegisterEntry, compact = false }) => {
   const { t } = useTranslation();
@@ -43,7 +46,8 @@ export const AlertsTable = ({ items = [], onRegisterEntry, compact = false }) =>
             </TableHead>
             <TableBody>
               {items.map((item) => (
-                <TableRow hover key={item.id}>
+                <TableRow hover
+                  key={item.id}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.categoryName}</TableCell>
                   <TableCell align="right">{item.currentStock}</TableCell>
@@ -56,14 +60,16 @@ export const AlertsTable = ({ items = [], onRegisterEntry, compact = false }) =>
                   </TableCell>
                   {!compact && (
                     <TableCell>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="success"
-                        onClick={() => onRegisterEntry(item.id)}
-                      >
-                        {t('registerEntry')}
-                      </Button>
+                      <Tooltip title={t('registerEntry')}>
+                        <IconButton
+                          color="success"
+                          onClick={() => onRegisterEntry(item.id)}
+                        >
+                          <SvgIcon fontSize="small">
+                            <ArchiveBoxArrowDownIcon />
+                          </SvgIcon>
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   )}
                 </TableRow>

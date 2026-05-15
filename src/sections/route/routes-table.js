@@ -40,7 +40,7 @@ export const RoutesTable = (props) => {
     onActivate,
     onViewDetail,
     onPreviewCost,
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -65,7 +65,8 @@ export const RoutesTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((route) => (
-                <TableRow hover key={route.id}>
+                <TableRow hover
+                  key={route.id}>
                   <TableCell>
                     <Typography variant="subtitle2">
                       {route.name}
@@ -78,20 +79,25 @@ export const RoutesTable = (props) => {
                   <TableCell>{route.tollbooths?.length || 0}</TableCell>
                   <TableCell>
                     {route.active ? (
-                      <Typography color="success.main" variant="caption">Activa</Typography>
+                      <Typography color="success.main"
+                        variant="caption">Activa</Typography>
                     ) : (
-                      <Typography color="error.main" variant="caption">Inactiva</Typography>
+                      <Typography color="error.main"
+                        variant="caption">Inactiva</Typography>
                     )}
                   </TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Stack direction="row"
+                      spacing={1}
+                      justifyContent="flex-end">
                       <Tooltip title="Preview de Costo">
                         <IconButton onClick={() => onPreviewCost(route)}>
                           <SvgIcon fontSize="small"><BanknotesIcon /></SvgIcon>
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Ver Detalles">
-                        <IconButton onClick={() => onViewDetail(route)}>
+                        <IconButton onClick={() => onViewDetail(route)}
+                          color='info'>
                           <SvgIcon fontSize="small"><EyeIcon /></SvgIcon>
                         </IconButton>
                       </Tooltip>
@@ -102,13 +108,15 @@ export const RoutesTable = (props) => {
                       </Tooltip>
                       {route.active ? (
                         <Tooltip title="Desactivar">
-                          <IconButton onClick={() => onDelete(route.id)} color="error">
+                          <IconButton onClick={() => onDelete(route.id)}
+                            color="error">
                             <SvgIcon fontSize="small"><TrashIcon /></SvgIcon>
                           </IconButton>
                         </Tooltip>
                       ) : (
                         <Tooltip title="Reactivar">
-                          <IconButton onClick={() => onActivate(route.id)} color="success">
+                          <IconButton onClick={() => onActivate(route.id)}
+                            color="success">
                             <SvgIcon fontSize="small"><ArrowPathIcon /></SvgIcon>
                           </IconButton>
                         </Tooltip>

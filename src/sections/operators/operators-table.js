@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Chip,
   MenuItem,
@@ -17,6 +19,9 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import format from 'date-fns/format';
+import EyeIcon from '@heroicons/react/24/solid/EyeIcon';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 
 const statusConfig = {
   disponible: { label: 'Disponible', color: 'success' },
@@ -58,8 +63,11 @@ export const OperatorsTable = (props) => {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    <Typography variant="subtitle1" color="text.secondary">
+                  <TableCell colSpan={7}
+                    align="center"
+                    sx={{ py: 3 }}>
+                    <Typography variant="subtitle1"
+                      color="text.secondary">
                       No hay operadores.
                     </Typography>
                   </TableCell>
@@ -69,7 +77,8 @@ export const OperatorsTable = (props) => {
                   const conf = statusConfig[operator.status] || statusConfig.disponible;
 
                   return (
-                    <TableRow hover key={operator.id}>
+                    <TableRow hover
+                      key={operator.id}>
                       <TableCell>
                         <Typography variant="subtitle2">{operator.name}</Typography>
                       </TableCell>
@@ -82,12 +91,15 @@ export const OperatorsTable = (props) => {
                       </TableCell>
                       <TableCell>
                         {operator.phone && <Typography variant="body2">{operator.phone}</Typography>}
-                        {operator.email && <Typography variant="caption" color="text.secondary">{operator.email}</Typography>}
+                        {operator.email && <Typography variant="caption"
+                          color="text.secondary">{operator.email}</Typography>}
                         {!operator.phone && !operator.email && '—'}
                       </TableCell>
                       <TableCell>
                         {operator.status === 'en_viaje' ? (
-                          <Chip label={conf.label} color={conf.color} size="small" />
+                          <Chip label={conf.label}
+                            color={conf.color}
+                            size="small" />
                         ) : (
                           <TextField
                             select
@@ -106,31 +118,33 @@ export const OperatorsTable = (props) => {
                         )}
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            color="info"
-                            onClick={() => onViewDetail(operator)}
-                          >
-                            Detalle
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => onEdit(operator)}
-                          >
-                            Editar
-                          </Button>
+                        <Stack direction="row"
+                          spacing={1}
+                          justifyContent="flex-end">
+                          <Tooltip title="Detalle">
+                            <IconButton color="info"
+                              onClick={() => onViewDetail(operator)}>
+                              <SvgIcon fontSize="small">
+                                <EyeIcon />
+                              </SvgIcon>
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Editar">
+                            <IconButton onClick={() => onEdit(operator)}>
+                              <SvgIcon fontSize="small">
+                                <PencilIcon />
+                              </SvgIcon>
+                            </IconButton>
+                          </Tooltip>
                           {operator.status !== 'inactivo' && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="error"
-                              onClick={() => onDelete(operator.id)}
-                            >
-                              Eliminar
-                            </Button>
+                            <Tooltip title="Eliminar">
+                              <IconButton color="error"
+                                onClick={() => onDelete(operator.id)}>
+                                <SvgIcon fontSize="small">
+                                  <TrashIcon />
+                                </SvgIcon>
+                              </IconButton>
+                            </Tooltip>
                           )}
                         </Stack>
                       </TableCell>
