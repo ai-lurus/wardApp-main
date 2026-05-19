@@ -7,6 +7,7 @@ on:
 
 env:
   REGISTRY: 100.81.167.109:30500
+  K8S_REGISTRY: 148.213.8.22:30500
   IMAGE_NAME: wardapp-frontend
   K8S_NAMESPACE: ward
   DEPLOYMENT_NAME: wardapp-frontend
@@ -24,7 +25,7 @@ jobs:
 
       # 2. Conectarse a la red VPN de Tailscale
       - name: Setup Tailscale
-        uses: tailscale/github-action@v2
+        uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: latest
@@ -43,7 +44,11 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # 5. Compilar y subir la imagen Docker de frontend (inyectando la URL del API segura)
+      # 5. Configurar constructor de Docker con soporte de caché avanzado (Buildx)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 6. Compilar y subir la imagen Docker de frontend (usando la caché de GitHub y el build argument)
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -55,19 +60,21 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # 6. Configurar kubeconfig para interactuar con el clúster
+      # 7. Configurar kubeconfig para interactuar con el clúster
       - name: Setup kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      # 7. Actualizar la imagen en el Deployment de Kubernetes
+      # 8. Actualizar la imagen en el Deployment de Kubernetes (usando la IP de red física)
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
-            ${{ env.CONTAINER_NAME }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            ${{ env.CONTAINER_NAME }}=${{ env.K8S_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             -n ${{ env.K8S_NAMESPACE }}
           
           # Verificar que el rollout termine exitosamente
