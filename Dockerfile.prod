@@ -16,23 +16,37 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Compilar Next.js
+# Compilar Next.js en modo standalone
 RUN npm run build
 
-# Stage 2: Runner
+# Stage 2: Runner (Producción súper ligera)
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Next.js requiere estos archivos para funcionar en producción estándar
-COPY --from=builder /app/next.config.js ./
+# Crear usuario no privilegiado para seguridad
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copiar archivos estáticos y recursos públicos necesarios
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+
+# Configurar permisos para la caché de Next.js
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Copiar el build standalone optimizado (pesa ~80% menos que copiar todo node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Ejecutar el servidor optimizado standalone de Node directamente
+CMD ["node", "server.js"]
