@@ -4,6 +4,7 @@ import {
   Stack, TextField, InputAdornment, Typography
 } from '@mui/material';
 import { tripsApi, unitsApi } from 'src/services/apiService';
+import { TripCostComparison } from './trip-cost-comparison';
 
 export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
   const [tollboothCost, setTollboothCost] = useState(trip?.costDetail?.estimatedTollboothCost || '');
@@ -33,7 +34,7 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
   return (
     <Dialog open={open}
       onClose={onClose}
-      maxWidth="xs"
+      maxWidth="sm"
       fullWidth>
       <DialogTitle>Cerrar Viaje</DialogTitle>
       <DialogContent dividers>
@@ -105,6 +106,20 @@ export const TripCloseModal = ({ open, onClose, trip, onSuccess }) => {
             required
           />
 
+          <TripCostComparison 
+            estimatedCosts={{
+              tollbooth: trip?.costDetail?.estimatedTollboothCost,
+              fuel: trip?.costDetail?.estimatedFuelCost,
+              insurance: 0,
+              extras: trip?.costDetail?.estimatedExtrasCost
+            }}
+            actualCosts={{
+              tollbooth: tollboothCost,
+              fuel: fuelCost,
+              insurance: 0,
+              extras: extrasCost
+            }}
+          />
 
         </Stack>
       </DialogContent>
