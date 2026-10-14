@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Chip,
   MenuItem,
@@ -17,6 +19,8 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import format from 'date-fns/format';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 
 const statusConfig = {
   disponible: { label: 'Disponible', color: 'success' },
@@ -58,8 +62,11 @@ export const UnitsTable = (props) => {
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
-                    <Typography variant="subtitle1" color="text.secondary">
+                  <TableCell colSpan={9}
+                    align="center"
+                    sx={{ py: 3 }}>
+                    <Typography variant="subtitle1"
+                      color="text.secondary">
                       No hay unidades.
                     </Typography>
                   </TableCell>
@@ -69,11 +76,13 @@ export const UnitsTable = (props) => {
                   const conf = statusConfig[unit.status] || statusConfig.disponible;
 
                   return (
-                    <TableRow hover key={unit.id}>
+                    <TableRow hover
+                      key={unit.id}>
                       <TableCell>
                         <Typography variant="subtitle2">{unit.matricula}</Typography>
                         {unit.vin && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption"
+                            color="text.secondary">
                             VIN: {unit.vin}
                           </Typography>
                         )}
@@ -87,7 +96,9 @@ export const UnitsTable = (props) => {
                       <TableCell>{unit.axesNumber || '—'}</TableCell>
                       <TableCell>
                         {unit.status === 'en_viaje' ? (
-                          <Chip label={conf.label} color={conf.color} size="small" />
+                          <Chip label={conf.label}
+                            color={conf.color}
+                            size="small" />
                         ) : (
                           <TextField
                             select
@@ -111,23 +122,27 @@ export const UnitsTable = (props) => {
                           : '—'}
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => onEdit(unit)}
-                          >
-                            Editar
-                          </Button>
+                        <Stack direction="row"
+                          spacing={1}
+                          justifyContent="flex-end">
+                          <Tooltip title="Editar">
+                            <IconButton onClick={() => onEdit(unit)}>
+                              <SvgIcon fontSize="small">
+                                <PencilIcon />
+                              </SvgIcon>
+                            </IconButton>
+                          </Tooltip>
                           {unit.status !== 'inactivo' && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="warning"
-                              onClick={() => onStatusChange(unit.id, 'inactivo')}
-                            >
-                              Desactivar
-                            </Button>
+                            <Tooltip title="Desactivar">
+                              <IconButton
+                                color="warning"
+                                onClick={() => onStatusChange(unit.id, 'inactivo')}
+                              >
+                                <SvgIcon fontSize="small">
+                                  <TrashIcon />
+                                </SvgIcon>
+                              </IconButton>
+                            </Tooltip>
                           )}
                         </Stack>
                       </TableCell>

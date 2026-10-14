@@ -131,11 +131,29 @@ export const items = [
     ),
     children: [
       {
+        title: 'Operadores',
+        path: '/operators',
+        icon: (
+          <SvgIcon fontSize="small">
+            <UserGroupIcon />
+          </SvgIcon>
+        ),
+      },
+      {
         title: 'Rutas y Casetas',
         path: '/routes',
         icon: (
           <SvgIcon fontSize="small">
             <MapIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Viajes',
+        path: '/trips',
+        icon: (
+          <SvgIcon fontSize="small">
+            <TruckIcon />
           </SvgIcon>
         ),
       },

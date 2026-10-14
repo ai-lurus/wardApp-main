@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Chip,
   Stack,
@@ -14,6 +16,9 @@ import {
   Typography,
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
+import ArrowPathIcon from '@heroicons/react/24/solid/ArrowPathIcon';
 
 const roleLabels = {
   admin: { label: 'Admin', color: 'primary' },
@@ -24,7 +29,7 @@ export const UsersTable = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -52,12 +57,14 @@ export const UsersTable = (props) => {
               {items.map((user) => {
                 const roleInfo = roleLabels[user.role] || { label: user.role, color: 'default' };
                 return (
-                  <TableRow hover key={user.id}>
+                  <TableRow hover
+                    key={user.id}>
                     <TableCell>
                       <Typography variant="subtitle2">{user.name}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2"
+                        color="text.secondary">
                         {user.email}
                       </Typography>
                     </TableCell>
@@ -77,29 +84,34 @@ export const UsersTable = (props) => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2"
+                        color="text.secondary">
                         {new Date(user.createdAt).toLocaleDateString('es-MX')}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => onEdit(user)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color={user.active ? 'error' : 'success'}
-                          onClick={() => onToggleStatus(user)}
-                          disabled={user.id === currentUserId}
-                          title={user.id === currentUserId ? 'No puedes desactivar tu propia cuenta' : ''}
-                        >
-                          {user.active ? 'Desactivar' : 'Activar'}
-                        </Button>
+                      <Stack direction="row"
+                        spacing={1}>
+                        <Tooltip title="Editar">
+                          <IconButton onClick={() => onEdit(user)}>
+                            <SvgIcon fontSize="small">
+                              <PencilIcon />
+                            </SvgIcon>
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={user.id === currentUserId ? 'No puedes desactivar tu propia cuenta' : (user.active ? 'Desactivar' : 'Activar')}>
+                          <span>
+                            <IconButton
+                              color={user.active ? 'error' : 'success'}
+                              onClick={() => onToggleStatus(user)}
+                              disabled={user.id === currentUserId}
+                            >
+                              <SvgIcon fontSize="small">
+                                {user.active ? <TrashIcon /> : <ArrowPathIcon />}
+                              </SvgIcon>
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       </Stack>
                     </TableCell>
                   </TableRow>

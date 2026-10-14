@@ -1,5 +1,11 @@
 # Ward.io - Contexto para Claude
 
+## 🗺️ Graphify: Mapa de Código
+Este repositorio utiliza **Graphify** para mapeo estructural. 
+- **Reporte de Nodos:** [GRAPH_REPORT.md](./GRAPH_REPORT.md)
+- **Grafo Interactivo (Local):** [graph.html](../.graphify/backend/graph.html)
+- **Uso:** Consulta `GRAPH_REPORT.md` para navegar entre páginas, secciones y el hub central `apiService.js`.
+
 ## Qué es Ward.io
 SaaS multitenant para empresas de transporte de carga. El MVP es el **módulo de inventario** (gestión de materiales, entradas/salidas de stock, alertas de stock bajo).
 

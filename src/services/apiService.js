@@ -232,6 +232,41 @@ const toUnitPayload = (values) => ({
   status: values.status || undefined,
 });
 
+const normalizeOperatorDocument = (d) => ({
+  id: d.id,
+  operatorId: d.operator_id,
+  documentType: d.document_type,
+  fileUrl: d.file_url,
+  signedUrl: d.signed_url || null,
+  expiryDate: d.expiry_date,
+  createdAt: d.created_at,
+});
+
+const normalizeOperator = (o) => ({
+  id: o.id,
+  companyId: o.company_id,
+  name: o.name,
+  licenseNumber: o.license_number,
+  licenseType: o.license_type,
+  licenseExpiry: o.license_expiry,
+  status: o.status,
+  phone: o.phone || '',
+  email: o.email || '',
+  createdAt: o.created_at,
+  updatedAt: o.updated_at,
+  documents: o.documents ? o.documents.map(normalizeOperatorDocument) : [],
+});
+
+const toOperatorPayload = (values) => ({
+  name: values.name,
+  license_number: values.licenseNumber,
+  license_type: values.licenseType,
+  license_expiry: values.licenseExpiry,
+  status: values.status || undefined,
+  phone: values.phone || undefined,
+  email: values.email || undefined,
+});
+
 const toTollboothPayload = (values) => ({
   name: values.name,
   cost_2_axles: Number(values.cost2Axles) || undefined,
@@ -333,6 +368,39 @@ export const unitsApi = {
 
   getAlertsInsurance: () =>
     api.get('/units/alerts/insurance').then((r) => r.data.map(normalizeUnit)),
+};
+
+// ─── Operators ─────────────────────────────────────────
+
+export const operatorsApi = {
+  list: (params = {}) =>
+    api.get('/operators', { params }).then((r) => r.data.map(normalizeOperator)),
+
+  get: (id) =>
+    api.get(`/operators/${id}`).then((r) => normalizeOperator(r.data)),
+
+  create: (values) =>
+    api.post('/operators', toOperatorPayload(values)).then((r) => normalizeOperator(r.data)),
+
+  update: (id, values) =>
+    api.put(`/operators/${id}`, toOperatorPayload(values)).then((r) => normalizeOperator(r.data)),
+
+  updateStatus: (id, status) =>
+    api.patch(`/operators/${id}/status`, { status }).then((r) => normalizeOperator(r.data)),
+
+  delete: (id) =>
+    api.delete(`/operators/${id}`).then((r) => r.data),
+
+  uploadDocument: (id, formData) =>
+    api.post(`/operators/${id}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => normalizeOperatorDocument(r.data)),
+
+  deleteDocument: (id, docId) =>
+    api.delete(`/operators/${id}/documents/${docId}`).then((r) => r.data),
+
+  getAlertsExpiringDocuments: () =>
+    api.get('/operators/alerts/expiring-documents').then((r) => r.data.map(normalizeOperatorDocument)),
 };
 
 // ─── Categories ────────────────────────────────────────
@@ -720,6 +788,105 @@ export const tollboothsApi = {
 
   delete: (id) =>
     api.delete(`/tollbooths/${id}`).then((r) => r.data),
+};
+
+// ─── Trips ─────────────────────────────────────────────
+
+const normalizeTripCostDetail = (c) => {
+  if (!c) return null;
+  return {
+    id: c.id,
+    tripId: c.trip_id,
+    tollboothCost: c.tollbooth_cost,
+    fuelCost: c.fuel_cost,
+    fuelType: c.fuel_type,
+    extrasCost: c.extras_cost,
+    estimatedTollboothCost: c.estimated_tollbooth_cost,
+    estimatedFuelCost: c.estimated_fuel_cost,
+    estimatedExtrasCost: c.estimated_extras_cost,
+  };
+};
+
+const normalizeTrip = (t) => ({
+  id: t.id,
+  companyId: t.company_id,
+  routeId: t.route_id,
+  unitId: t.unit_id,
+  operatorId: t.operator_id,
+  status: t.status,
+  scheduledDate: t.scheduled_date,
+  departureTime: t.departure_time,
+  arrivalTime: t.arrival_time,
+  estimatedCost: t.estimated_cost,
+  actualCost: t.actual_cost,
+  notes: t.notes,
+  entryCost: t.entry_cost,
+  createdAt: t.created_at,
+  updatedAt: t.updated_at,
+  costDetail: normalizeTripCostDetail(t.cost_detail),
+  route: t.route ? normalizeRoute(t.route) : null,
+  unit: t.unit ? normalizeUnit(t.unit) : null,
+  operator: t.operator ? normalizeOperator(t.operator) : null,
+});
+
+const toTripPayload = (values) => ({
+  route_id: values.routeId,
+  unit_id: values.unitId,
+  operator_id: values.operatorId,
+  scheduled_date: new Date(values.scheduledDate).toISOString(),
+  notes: values.notes || undefined,
+  entry_cost: values.entryCost !== undefined ? Number(values.entryCost) : undefined,
+  tollbooth_cost: values.tollboothCost !== undefined ? Number(values.tollboothCost) : undefined,
+  fuel_cost: values.fuelCost !== undefined ? Number(values.fuelCost) : undefined,
+  extras_cost: values.extrasCost !== undefined ? Number(values.extrasCost) : undefined,
+  estimated_tollbooth_cost: values.estimatedTollboothCost !== undefined ? Number(values.estimatedTollboothCost) : undefined,
+  estimated_fuel_cost: values.estimatedFuelCost !== undefined ? Number(values.estimatedFuelCost) : undefined,
+  estimated_extras_cost: values.estimatedExtrasCost !== undefined ? Number(values.estimatedExtrasCost) : undefined,
+  fuel_type: values.fuelType || undefined,
+});
+
+const toUpdateTripStatusPayload = (status) => ({
+  status,
+});
+
+const toCompleteTripPayload = (values) => ({
+  actual_tollbooth_cost: Number(values.actualTollboothCost),
+  actual_fuel_cost: Number(values.actualFuelCost),
+  actual_extras_cost: Number(values.actualExtrasCost),
+  entry_cost: Number(values.entryCost),
+});
+
+export const tripsApi = {
+  list: (params = {}) => {
+    const apiParams = {
+      ...params,
+      route_id: params.routeId,
+      unit_id: params.unitId,
+      operator_id: params.operatorId,
+      from_date: params.fromDate,
+      to_date: params.toDate,
+    };
+    
+    delete apiParams.routeId;
+    delete apiParams.unitId;
+    delete apiParams.operatorId;
+    delete apiParams.fromDate;
+    delete apiParams.toDate;
+    
+    return api.get('/trips', { params: apiParams }).then((r) => r.data.map(normalizeTrip));
+  },
+
+  get: (id) =>
+    api.get(`/trips/${id}`).then((r) => normalizeTrip(r.data)),
+
+  create: (values) =>
+    api.post('/trips', toTripPayload(values)).then((r) => normalizeTrip(r.data)),
+
+  updateStatus: (id, status) =>
+    api.patch(`/trips/${id}/status`, toUpdateTripStatusPayload(status)).then((r) => normalizeTrip(r.data)),
+
+  complete: (id, values) =>
+    api.patch(`/trips/${id}/completed`, toCompleteTripPayload(values)).then((r) => normalizeTrip(r.data)),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────

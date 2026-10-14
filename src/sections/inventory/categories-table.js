@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
+  IconButton,
+  Tooltip,
+  SvgIcon,
   Card,
   Stack,
   Table,
@@ -14,12 +16,14 @@ import {
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useTranslation } from 'react-i18next';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 
 export const CategoriesTable = (props) => {
   const {
     count = 0,
     items = [],
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
     page = 0,
     rowsPerPage = 0,
@@ -44,37 +48,43 @@ export const CategoriesTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((category) => (
-                <TableRow hover key={category.id}>
+                <TableRow hover
+                  key={category.id}>
                   <TableCell>
                     <Typography variant="subtitle2">{category.name}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2"
+                      color="text.secondary">
                       {category.description || '—'}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2"
+                      color="text.secondary">
                       {new Date(category.createdAt).toLocaleDateString('es-MX')}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => onEdit(category)}
-                      >
-                        {t('edit')}
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => onDelete(category)}
-                      >
-                        {t('delete')}
-                      </Button>
+                    <Stack direction="row"
+                      spacing={1}>
+                      <Tooltip title={t('edit')}>
+                        <IconButton onClick={() => onEdit(category)}>
+                          <SvgIcon fontSize="small">
+                            <PencilIcon />
+                          </SvgIcon>
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={t('delete')}>
+                        <IconButton
+                          color="error"
+                          onClick={() => onDelete(category)}
+                        >
+                          <SvgIcon fontSize="small">
+                            <TrashIcon />
+                          </SvgIcon>
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
                   </TableCell>
                 </TableRow>
