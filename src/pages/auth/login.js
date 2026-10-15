@@ -27,8 +27,8 @@ const Page = () => {
 
   const formik = useFormik({
     initialValues: {
-      email: 'admin@demo.com',
-      password: 'demo123',
+      email: '',
+      password: '',
       submit: null
     },
     validationSchema: Yup.object({
@@ -160,9 +160,6 @@ const Page = () => {
               </Link>
             </Box>
 
-            <Alert severity="info" sx={{ mt: 2 }}>
-              Demo: <b>admin@demo.com</b> / <b>demo123</b>
-            </Alert>
           </form>
         </Box>
       </Box>
