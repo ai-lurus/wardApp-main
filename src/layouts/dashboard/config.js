@@ -5,6 +5,11 @@ import DocumentChartBarIcon from '@heroicons/react/24/solid/DocumentChartBarIcon
 import ExclamationTriangleIcon from '@heroicons/react/24/solid/ExclamationTriangleIcon';
 import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
 import MapIcon from '@heroicons/react/24/solid/MapIcon';
+import BellAlertIcon from '@heroicons/react/24/solid/BellAlertIcon';
+import ChartBarIcon from '@heroicons/react/24/solid/ChartBarIcon';
+import CpuChipIcon from '@heroicons/react/24/solid/CpuChipIcon';
+import MapPinIcon from '@heroicons/react/24/solid/MapPinIcon';
+import SignalIcon from '@heroicons/react/24/solid/SignalIcon';
 import ShieldCheckIcon from '@heroicons/react/24/solid/ShieldCheckIcon';
 import TagIcon from '@heroicons/react/24/solid/TagIcon';
 import TruckIcon from '@heroicons/react/24/solid/TruckIcon';
@@ -169,6 +174,64 @@ export const items = [
         <WrenchIcon />
       </SvgIcon>
     ),
+  },
+  // GPS demo: runs on local mock data, no moduleId so it is visible without a subscription module.
+  {
+    title: 'GPS',
+    icon: (
+      <SvgIcon fontSize="small">
+        <SignalIcon />
+      </SvgIcon>
+    ),
+    children: [
+      {
+        title: 'Mapa de flota',
+        path: '/gps',
+        icon: (
+          <SvgIcon fontSize="small">
+            <MapPinIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Viajes en ruta',
+        path: '/gps/trips',
+        icon: (
+          <SvgIcon fontSize="small">
+            <TruckIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Centro de alertas',
+        path: '/gps/alerts',
+        // Shows the number of open alerts next to the item.
+        badgeKey: 'gpsAlerts',
+        icon: (
+          <SvgIcon fontSize="small">
+            <BellAlertIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Reportes GPS',
+        path: '/gps/reports',
+        icon: (
+          <SvgIcon fontSize="small">
+            <ChartBarIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Dispositivos',
+        path: '/gps/devices',
+        icon: (
+          <SvgIcon fontSize="small">
+            <CpuChipIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
   {
     title: 'Clientes',

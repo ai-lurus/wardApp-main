@@ -1,5 +1,44 @@
 import axios from 'axios';
 import { config } from '../config/env.config';
+import {
+  getGpsCities,
+  getGpsOverlays,
+  getGpsRoutes,
+  getGpsTrips,
+  getGpsUnit,
+  getGpsUnits,
+} from '../data/mock-gps';
+import {
+  assignGpsDevice,
+  findGpsDeviceByImei,
+  getDemoFleetUnits,
+  getGpsDeviceForUnit,
+  getGpsDeviceHistory,
+  getGpsDevices,
+  registerGpsDevice,
+  unassignGpsDevice,
+} from '../data/mock-gps-devices';
+import {
+  createManualHotspot,
+  deleteManualHotspot,
+  getManualHotspots,
+  isHotspotActive,
+  updateManualHotspot,
+} from '../data/mock-gps-hotspots';
+import { getStressUnit, getStressUnits } from '../data/mock-gps-stress';
+import {
+  createGeofence,
+  deleteGeofence,
+  getGeofences,
+  getStopRules,
+  saveStopRules,
+  updateGeofence,
+} from '../data/mock-gps-geofences';
+import { getGpsAlerts, subscribeGpsAlerts, updateGpsAlertStatus } from '../data/mock-gps-alerts';
+import { getUnitTrack } from '../data/mock-gps-replay';
+import { getGpsDailyStats } from '../data/mock-gps-reports';
+import { getPublicTracking } from '../data/mock-gps-tracking';
+import { readTrackingToken } from '../utils/gps-tracking';
 
 const API_BASE_URL = config.apiBaseUrl;
 
@@ -887,6 +926,127 @@ export const tripsApi = {
 
   complete: (id, values) =>
     api.patch(`/trips/${id}/completed`, toCompleteTripPayload(values)).then((r) => normalizeTrip(r.data)),
+};
+
+// ─── GPS (demo) ─────────────────────────────────────────
+// Demo only: resolves local mock data instead of calling the backend.
+// Swap each method for an `api.get(...)` call once GPS endpoints exist.
+
+const mockResponse = (data) =>
+  new Promise((resolve) => setTimeout(() => resolve(data), 300));
+
+// Runs a mock write and surfaces validation errors as a rejected promise, like an API error would.
+const mockMutation = (run) =>
+  new Promise((resolve, reject) =>
+    setTimeout(() => {
+      try {
+        resolve(run());
+      } catch (err) {
+        reject(err);
+      }
+    }, 300)
+  );
+
+export const gpsApi = {
+  // `stress` adds 100 local-delivery units around Monterrey to try clustering and zoom.
+  listUnits: ({ stress = false } = {}) =>
+    mockResponse(stress ? [...getGpsUnits(), ...getStressUnits()] : getGpsUnits()),
+
+  getUnit: (id) => mockResponse(getGpsUnit(id) || getStressUnit(id)),
+
+  listTrips: () => mockResponse(getGpsTrips()),
+
+  listRoutes: () => mockResponse(getGpsRoutes()),
+
+  listCities: () => mockResponse(getGpsCities()),
+
+  // Geofences, hot route stretches (computed + active hand-drawn ones) and current traffic.
+  listOverlays: () => {
+    const overlays = getGpsOverlays();
+    const manual = getManualHotspots().filter((spot) => isHotspotActive(spot));
+    return mockResponse({ ...overlays, geofences: getGeofences(), hotspots: [...overlays.hotspots, ...manual] });
+  },
+
+  // Recorded track of a unit for one day (route replay).
+  getUnitTrack: (unitId, dayIso) => {
+    const unit = getGpsUnit(unitId) || getStressUnit(unitId);
+    return mockResponse(unit ? getUnitTrack(unit, dayIso) : null);
+  },
+
+  // Public shipment tracking by token. Resolves { status: 'ok' | 'invalid' | 'expired' | 'not_found', ... }.
+  getPublicTracking: (token) => {
+    const options = readTrackingToken(token);
+    if (!options) return mockResponse({ status: 'invalid' });
+    if (options.expiresAt && options.expiresAt < Date.now()) return mockResponse({ status: 'expired', expiresAt: options.expiresAt });
+    const data = getPublicTracking(options);
+    if (!data) return mockResponse({ status: 'not_found' });
+    return mockResponse({ status: 'ok', options, ...data });
+  },
+
+  // Daily operation stats per unit (last 30 days) for GPS reports.
+  listDailyStats: () => mockResponse(getGpsDailyStats()),
+
+  // Alert center. `subscribeAlerts` notifies when an alert's status changes.
+  listAlerts: () => mockResponse(getGpsAlerts()),
+
+  updateAlertStatus: (id, status, note) => mockMutation(() => updateGpsAlertStatus(id, status, note)),
+
+  subscribeAlerts: (listener) => subscribeGpsAlerts(listener),
+
+  // Geofences (create, edit, delete) and the unauthorized-stop rule.
+  listGeofences: () => mockResponse(getGeofences()),
+
+  createGeofence: (values) => mockMutation(() => createGeofence(values)),
+
+  updateGeofence: (id, values) => mockMutation(() => updateGeofence(id, values)),
+
+  deleteGeofence: (id) => mockMutation(() => deleteGeofence(id)),
+
+  getStopRules: () => mockResponse(getStopRules()),
+
+  saveStopRules: (values) => mockMutation(() => saveStopRules(values)),
+
+  // Hot routes marked by hand, including expired ones.
+  listManualHotspots: () => mockResponse(getManualHotspots()),
+
+  createManualHotspot: (values) => mockMutation(() => createManualHotspot(values)),
+
+  updateManualHotspot: (id, values) => mockMutation(() => updateManualHotspot(id, values)),
+
+  deleteManualHotspot: (id) => mockMutation(() => deleteManualHotspot(id)),
+
+  // Devices and unit assignment.
+  listDevices: () => mockResponse(getGpsDevices()),
+
+  listDeviceHistory: () => mockResponse(getGpsDeviceHistory()),
+
+  getDeviceForUnit: (unitId) => mockResponse(getGpsDeviceForUnit(unitId)),
+
+  findDeviceByImei: (imei) => mockResponse(findGpsDeviceByImei(imei)),
+
+  // Fleet units from the real fleet module; falls back to demo units when it is unavailable or empty.
+  listAssignableUnits: async () => {
+    try {
+      const { items } = await unitsApi.list({ limit: 1000 });
+      if (items.length) {
+        return items.map((unit) => ({
+          id: unit.id,
+          label: [unit.matricula, [unit.marca, unit.modelo].filter(Boolean).join(' ')].filter(Boolean).join(' · '),
+          vehicle: [unit.marca, unit.modelo, unit.year].filter(Boolean).join(' '),
+          source: 'fleet',
+        }));
+      }
+    } catch (err) {
+      console.warn('Fleet units unavailable, using GPS demo units:', err.message);
+    }
+    return getDemoFleetUnits().map((unit) => ({ ...unit, source: 'demo' }));
+  },
+
+  registerDevice: (values) => mockMutation(() => registerGpsDevice(values)),
+
+  assignDevice: (values) => mockMutation(() => assignGpsDevice(values)),
+
+  unassignDevice: (values) => mockMutation(() => unassignGpsDevice(values)),
 };
 
 // ─── Legacy exports (admin/monitoring — not MVP) ──────
