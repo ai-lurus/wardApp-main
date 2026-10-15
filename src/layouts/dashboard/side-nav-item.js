@@ -1,10 +1,11 @@
 import NextLink from 'next/link';
 import PropTypes from 'prop-types';
-import { Box, ButtonBase, Tooltip } from '@mui/material';
+import { Badge, Box, ButtonBase, Chip, Tooltip } from '@mui/material';
 
 export const SideNavItem = (props) => {
   const {
     active = false,
+    badge = 0,
     collapsed = false,
     comingSoon = false,
     disabled,
@@ -54,7 +55,15 @@ export const SideNavItem = (props) => {
             ...(active && !comingSoon && { color: 'primary.main' }),
           }}
         >
-          {icon}
+          {collapsed && badge > 0 ? (
+            <Badge badgeContent={badge}
+color="error"
+max={99}>
+              {icon}
+            </Badge>
+          ) : (
+            icon
+          )}
         </Box>
       )}
       {!collapsed && (
@@ -75,6 +84,15 @@ export const SideNavItem = (props) => {
           {title}
         </Box>
       )}
+      {!collapsed && badge > 0 && (
+        <Chip
+          label={badge > 99 ? '99+' : badge}
+          color="error"
+          size="small"
+          aria-label={`${badge} pendientes`}
+          sx={{ height: 20, fontSize: 11, fontWeight: 700, '& .MuiChip-label': { px: '7px' } }}
+        />
+      )}
     </ButtonBase>
   );
 
@@ -87,7 +105,8 @@ export const SideNavItem = (props) => {
   if (collapsed || comingSoon) {
     return (
       <li>
-        <Tooltip title={tooltipTitle} placement="right">
+        <Tooltip title={tooltipTitle}
+placement="right">
           {/* span wrapper needed for Tooltip on disabled elements */}
           <span style={{ display: 'block' }}>{button}</span>
         </Tooltip>
@@ -100,6 +119,7 @@ export const SideNavItem = (props) => {
 
 SideNavItem.propTypes = {
   active: PropTypes.bool,
+  badge: PropTypes.number,
   collapsed: PropTypes.bool,
   comingSoon: PropTypes.bool,
   disabled: PropTypes.bool,

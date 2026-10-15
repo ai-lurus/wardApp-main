@@ -38,12 +38,16 @@ import { useAuth } from 'src/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
 import { getInitials } from 'src/utils/get-initials';
 import { inventoryApi } from 'src/services/apiService';
+import { useGpsAlerts } from 'src/hooks/use-gps-alerts';
 
 export const SideNav = (props) => {
   const { open, onClose, collapsed, onToggleCollapse } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   const { t } = useTranslation();
+  const { openCount: gpsAlertCount } = useGpsAlerts();
+  // Counters shown next to menu items that declare a `badgeKey` in config.js.
+  const badges = { gpsAlerts: gpsAlertCount };
   const auth = useAuth();
   const router = useRouter();
 
@@ -232,6 +236,7 @@ export const SideNav = (props) => {
                 <SideNavItem
                   key={child.title}
                   active={active}
+                  badge={badges[child.badgeKey] || 0}
                   collapsed
                   icon={child.icon}
                   path={child.path}
@@ -317,6 +322,7 @@ export const SideNav = (props) => {
                     <SideNavItem
                       key={child.title}
                       active={active}
+                      badge={badges[child.badgeKey] || 0}
                       collapsed={false}
                       icon={child.icon}
                       path={child.path}
