@@ -19,7 +19,6 @@ export const SubscriptionGuard = ({ children, moduleId = 'inventario' }) => {
     if (!router.isReady || isLoading) return;
     if (ignore.current) return;
     ignore.current = true;
-
     const status = user?.company?.subscription_status;
     const modules = user?.company?.active_modules || [];
     const hasAccess = ACTIVE_STATUSES.includes(status) && modules.includes(moduleId);

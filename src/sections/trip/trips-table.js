@@ -28,6 +28,7 @@ export const TripsTable = (props) => {
             <TableRow>
               <TableCell>Fecha</TableCell>
               <TableCell>Ruta</TableCell>
+              <TableCell>Cliente</TableCell>
               <TableCell>Unidad</TableCell>
               <TableCell>Operador</TableCell>
               <TableCell>Costo Estimado</TableCell>
@@ -57,6 +58,9 @@ export const TripsTable = (props) => {
                       color="text.secondary">
                       {trip.route?.origin} → {trip.route?.destination}
                     </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {trip.customer?.name || '—'}
                   </TableCell>
                   <TableCell>
                     {trip.unit?.plate || trip.unit?.matricula}

@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  Stepper, Step, StepLabel, Box, Stack, MenuItem,
+  Stepper, Step, StepLabel, Box, Stack, MenuItem, Autocomplete,
   TextField, Typography, CircularProgress, Divider, Paper, Alert, InputAdornment
 } from '@mui/material';
 import { routesApi, tripsApi } from 'src/services/apiService';
 
 const steps = ['Asignación', 'Desglose de Costos', 'Confirmación'];
 
-export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, operators }) => {
+export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, operators, customers = [] }) => {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,6 +20,8 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   const [unitId, setUnitId] = useState('');
   const [operatorId, setOperatorId] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
+  const [customerId, setCustomerId] = useState('');
+  const [entryCost, setEntryCost] = useState('');
 
   // Cost Preview State
   const [routeDetails, setRouteDetails] = useState(null);
@@ -28,10 +32,17 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   // Available options
   const availableUnits = units.filter(u => u.status === 'disponible');
   const availableOperators = operators; // For now assuming all operators available or filtering by role
+  const activeRoutes = routes.filter(r => r.active);
+
+  const handleGoToRoutes = () => {
+    onClose();
+    router.push('/routes');
+  };
 
   const selectedRoute = routes.find(r => r.id === routeId);
   const selectedUnit = units.find(u => u.id === unitId);
   const selectedOperator = operators.find(u => u.id === operatorId);
+  const selectedCustomer = customers.find(c => c.id === customerId) || null;
 
   useEffect(() => {
     const distance = routeDetails?.distanceKm || selectedRoute?.distanceKm || 0;
@@ -106,6 +117,8 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
         unitId,
         operatorId,
         scheduledDate,
+        customerId: customerId || undefined,
+        entryCost: entryCost !== '' ? Number(entryCost) : undefined,
         estimatedTollboothCost: tollsTotal,
         estimatedFuelCost: Number(fuelCostEst) || 0,
         estimatedExtrasCost: Number(adHocExtras) || 0,
@@ -128,18 +141,33 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
           <Stack spacing={3}
             sx={{ mt: 2 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              select
-              fullWidth
-              label="Ruta"
-              value={routeId}
-              onChange={(e) => setRouteId(e.target.value)}
-            >
-              {routes.filter(r => r.active).map(r => (
-                <MenuItem key={r.id}
-                  value={r.id}>{r.name} ({r.origin} → {r.destination})</MenuItem>
-              ))}
-            </TextField>
+            {activeRoutes.length > 0 ? (
+              <TextField
+                select
+                fullWidth
+                label="Ruta"
+                value={routeId}
+                onChange={(e) => setRouteId(e.target.value)}
+              >
+                {activeRoutes.map(r => (
+                  <MenuItem key={r.id}
+                    value={r.id}>{r.name} ({r.origin} → {r.destination})</MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <Alert
+                severity="info"
+                action={(
+                  <Button color="inherit"
+                    size="small"
+                    onClick={handleGoToRoutes}>
+                    Registrar ruta
+                  </Button>
+                )}
+              >
+                No hay rutas registradas. Registra una ruta para poder crear un viaje.
+              </Alert>
+            )}
             <TextField
               select
               fullWidth
@@ -171,6 +199,31 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
               fullWidth
+            />
+            {customers.length > 0 && (
+              <Autocomplete
+                fullWidth
+                options={customers}
+                getOptionLabel={(option) => option.name ? `${option.name} (${option.phone})` : ''}
+                value={selectedCustomer}
+                onChange={(_, newValue) => setCustomerId(newValue ? newValue.id : '')}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField {...params}
+                    label="Cliente (opcional)" />
+                )}
+              />
+            )}
+            <TextField
+              label="Tarifa acordada (opcional)"
+              type="number"
+              value={entryCost}
+              onChange={(e) => setEntryCost(e.target.value)}
+              fullWidth
+              helperText="Lo que se le cobrará al cliente por el viaje"
+              InputProps={{
+                startAdornment: <InputAdornment position="start">$</InputAdornment>
+              }}
             />
           </Stack>
         );
@@ -348,6 +401,13 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
                 color="text.secondary">Fecha</Typography>
               <Typography>{scheduledDate}</Typography>
             </Box>
+            {selectedCustomer && (
+              <Box>
+                <Typography variant="subtitle2"
+                  color="text.secondary">Cliente</Typography>
+                <Typography>{selectedCustomer.name}</Typography>
+              </Box>
+            )}
             <Divider />
             <Stack direction="row"
               justifyContent="space-between">
@@ -355,6 +415,23 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
               <Typography variant="h6"
                 color="primary">${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</Typography>
             </Stack>
+            {entryCost !== '' && (
+              <>
+                <Stack direction="row"
+                  justifyContent="space-between">
+                  <Typography>Tarifa acordada</Typography>
+                  <Typography>${Number(entryCost).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</Typography>
+                </Stack>
+                <Stack direction="row"
+                  justifyContent="space-between">
+                  <Typography variant="subtitle1">Utilidad Estimada</Typography>
+                  <Typography variant="subtitle1"
+                    color={Number(entryCost) - total < 0 ? 'error.main' : 'success.main'}>
+                    ${(Number(entryCost) - total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </Typography>
+                </Stack>
+              </>
+            )}
           </Stack>
         );
       default:

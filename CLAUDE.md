@@ -97,6 +97,8 @@ Evitar donut charts con series de ceros — causan errores internos en v3.37.
 | `/movements` | ✅ | Historial paginado + registrar entrada/salida con modal |
 | `/alerts` | ✅ | Lista stock bajo + acción registrar entrada |
 | `/reports` | ✅ | Tab movimientos (gráfica + tabla + export CSV) + tab stock por categoría |
+| `/customers` | ✅ | Clientes > Directorio: CRUD (solo admin) + drawer con finanzas y viajes del cliente |
+| `/customers/reports` | ✅ | Clientes > Reportes: ingresos/utilidad por cliente, más frecuentes, filtro de fechas, CSV |
 
 ### Layout
 | Feature | Estado |
@@ -111,7 +113,7 @@ Evitar donut charts con series de ceros — causan errores internos en v3.37.
 - ❌ **Gestión de usuarios** (`/users`) — CRUD de usuarios, solo admin
 
 ### No usar / Ignorar
-- `pages/companies.js`, `pages/customers.js` — no son del MVP
+- `pages/companies.js` — no es del MVP
 - `pages/monitoring/*` — módulo de operaciones, no MVP
 - `pages/store.js` — reemplazado por `/` (Inicio)
 
@@ -259,7 +261,6 @@ No hardcodear links de navegación en otros componentes.
 ### 10. Páginas que NO tocar (no son del MVP)
 
 - `pages/companies.js`
-- `pages/customers.js`
 - `pages/monitoring/*`
 - `pages/store.js`
 
