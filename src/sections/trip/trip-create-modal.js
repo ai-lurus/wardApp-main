@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   Stepper, Step, StepLabel, Box, Stack, MenuItem, Autocomplete,
@@ -9,6 +10,7 @@ import { routesApi, tripsApi } from 'src/services/apiService';
 const steps = ['Asignación', 'Desglose de Costos', 'Confirmación'];
 
 export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, operators, customers = [] }) => {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,6 +32,12 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
   // Available options
   const availableUnits = units.filter(u => u.status === 'disponible');
   const availableOperators = operators; // For now assuming all operators available or filtering by role
+  const activeRoutes = routes.filter(r => r.active);
+
+  const handleGoToRoutes = () => {
+    onClose();
+    router.push('/routes');
+  };
 
   const selectedRoute = routes.find(r => r.id === routeId);
   const selectedUnit = units.find(u => u.id === unitId);
@@ -133,18 +141,33 @@ export const TripCreateModal = ({ open, onClose, onSuccess, routes, units, opera
           <Stack spacing={3}
             sx={{ mt: 2 }}>
             {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              select
-              fullWidth
-              label="Ruta"
-              value={routeId}
-              onChange={(e) => setRouteId(e.target.value)}
-            >
-              {routes.filter(r => r.active).map(r => (
-                <MenuItem key={r.id}
-                  value={r.id}>{r.name} ({r.origin} → {r.destination})</MenuItem>
-              ))}
-            </TextField>
+            {activeRoutes.length > 0 ? (
+              <TextField
+                select
+                fullWidth
+                label="Ruta"
+                value={routeId}
+                onChange={(e) => setRouteId(e.target.value)}
+              >
+                {activeRoutes.map(r => (
+                  <MenuItem key={r.id}
+                    value={r.id}>{r.name} ({r.origin} → {r.destination})</MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <Alert
+                severity="info"
+                action={(
+                  <Button color="inherit"
+                    size="small"
+                    onClick={handleGoToRoutes}>
+                    Registrar ruta
+                  </Button>
+                )}
+              >
+                No hay rutas registradas. Registra una ruta para poder crear un viaje.
+              </Alert>
+            )}
             <TextField
               select
               fullWidth
