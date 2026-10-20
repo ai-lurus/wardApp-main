@@ -6,14 +6,15 @@ import { TripsSearch } from './trips-search';
 import { TripsSummary } from './trips-summary';
 import { TripCreateModal } from './trip-create-modal';
 import { TripDetailDrawer } from './trip-detail-drawer';
-import { tripsApi, routesApi, unitsApi, operatorsApi } from 'src/services/apiService';
+import { tripsApi, routesApi, unitsApi, operatorsApi, customersApi } from 'src/services/apiService';
 
 export const TripsSection = () => {
   const [trips, setTrips] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [units, setUnits] = useState([]);
   const [operators, setOperators] = useState([]);
-  
+  const [customers, setCustomers] = useState([]);
+
   const [filters, setFilters] = useState({ query: '', status: '', routeId: '', unitId: '' });
   
   // Modals state
@@ -36,6 +37,13 @@ export const TripsSection = () => {
       setOperators(fetchedOperators || []);
     } catch (err) {
       console.error('Error fetching dependencies:', err);
+    }
+
+    // Customers are optional: tenants without the "clientes" module get a 403 here
+    try {
+      setCustomers(await customersApi.list());
+    } catch (err) {
+      setCustomers([]);
     }
   }, []);
 
@@ -118,6 +126,7 @@ sx={{ mb: 2 }}>
           routes={routes}
           units={units}
           operators={operators}
+          customers={customers}
         />
       )}
 
@@ -127,6 +136,8 @@ sx={{ mb: 2 }}>
           onClose={() => setDetailDrawer({ open: false, data: null })}
           onSuccess={handleTripUpdated}
           trip={detailDrawer.data}
+          customers={customers}
+          onCustomerChange={fetchTrips}
         />
       )}
     </Stack>

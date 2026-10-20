@@ -306,6 +306,56 @@ const toOperatorPayload = (values) => ({
   email: values.email || undefined,
 });
 
+const normalizeCustomerStats = (s = {}) => ({
+  tripCount: s.trip_count || 0,
+  completedCount: s.completed_count || 0,
+  revenue: s.revenue || 0,
+  cost: s.cost || 0,
+  profit: s.profit || 0,
+  margin: s.margin || 0,
+  lastTripDate: s.last_trip_date || null,
+});
+
+const normalizeCustomer = (c) => ({
+  id: c.id,
+  companyId: c.company_id,
+  name: c.name,
+  phone: c.phone || '',
+  email: c.email || '',
+  notes: c.notes || '',
+  createdAt: c.created_at,
+  updatedAt: c.updated_at,
+  stats: normalizeCustomerStats(c.stats),
+  trips: c.trips ? c.trips.map(normalizeTrip) : [],
+});
+
+const toCustomerPayload = (values) => ({
+  name: values.name,
+  phone: values.phone,
+  email: values.email || '',
+  notes: values.notes || '',
+});
+
+const normalizeCustomerReport = (r) => ({
+  items: r.items.map((i) => ({
+    customerId: i.customer_id,
+    name: i.name,
+    phone: i.phone || '',
+    email: i.email || '',
+    active: i.active,
+    ...normalizeCustomerStats(i),
+  })),
+  totals: {
+    customersWithTrips: r.totals.customers_with_trips,
+    tripCount: r.totals.trip_count,
+    completedCount: r.totals.completed_count,
+    revenue: r.totals.revenue,
+    cost: r.totals.cost,
+    profit: r.totals.profit,
+    margin: r.totals.margin,
+  },
+});
+
 const toTollboothPayload = (values) => ({
   name: values.name,
   cost_2_axles: Number(values.cost2Axles) || undefined,
@@ -440,6 +490,30 @@ export const operatorsApi = {
 
   getAlertsExpiringDocuments: () =>
     api.get('/operators/alerts/expiring-documents').then((r) => r.data.map(normalizeOperatorDocument)),
+};
+
+// ─── Customers ─────────────────────────────────────────
+
+export const customersApi = {
+  list: (params = {}) =>
+    api.get('/customers', { params }).then((r) => r.data.map(normalizeCustomer)),
+
+  get: (id) =>
+    api.get(`/customers/${id}`).then((r) => normalizeCustomer(r.data)),
+
+  create: (values) =>
+    api.post('/customers', toCustomerPayload(values)).then((r) => normalizeCustomer(r.data)),
+
+  update: (id, values) =>
+    api.put(`/customers/${id}`, toCustomerPayload(values)).then((r) => normalizeCustomer(r.data)),
+
+  delete: (id) =>
+    api.delete(`/customers/${id}`).then((r) => r.data),
+
+  report: ({ fromDate, toDate } = {}) =>
+    api
+      .get('/customers/report', { params: { from_date: fromDate, to_date: toDate } })
+      .then((r) => normalizeCustomerReport(r.data)),
 };
 
 // ─── Categories ────────────────────────────────────────
@@ -852,6 +926,7 @@ const normalizeTrip = (t) => ({
   routeId: t.route_id,
   unitId: t.unit_id,
   operatorId: t.operator_id,
+  customerId: t.customer_id || null,
   status: t.status,
   scheduledDate: t.scheduled_date,
   departureTime: t.departure_time,
@@ -866,12 +941,14 @@ const normalizeTrip = (t) => ({
   route: t.route ? normalizeRoute(t.route) : null,
   unit: t.unit ? normalizeUnit(t.unit) : null,
   operator: t.operator ? normalizeOperator(t.operator) : null,
+  customer: t.customer ? { id: t.customer.id, name: t.customer.name, phone: t.customer.phone || '' } : null,
 });
 
 const toTripPayload = (values) => ({
   route_id: values.routeId,
   unit_id: values.unitId,
   operator_id: values.operatorId,
+  customer_id: values.customerId || undefined,
   scheduled_date: new Date(values.scheduledDate).toISOString(),
   notes: values.notes || undefined,
   entry_cost: values.entryCost !== undefined ? Number(values.entryCost) : undefined,
@@ -902,13 +979,15 @@ export const tripsApi = {
       route_id: params.routeId,
       unit_id: params.unitId,
       operator_id: params.operatorId,
+      customer_id: params.customerId,
       from_date: params.fromDate,
       to_date: params.toDate,
     };
-    
+
     delete apiParams.routeId;
     delete apiParams.unitId;
     delete apiParams.operatorId;
+    delete apiParams.customerId;
     delete apiParams.fromDate;
     delete apiParams.toDate;
     
@@ -926,6 +1005,9 @@ export const tripsApi = {
 
   complete: (id, values) =>
     api.patch(`/trips/${id}/completed`, toCompleteTripPayload(values)).then((r) => normalizeTrip(r.data)),
+
+  assignCustomer: (id, customerId) =>
+    api.patch(`/trips/${id}/customer`, { customer_id: customerId || null }).then((r) => normalizeTrip(r.data)),
 };
 
 // ─── GPS (demo) ─────────────────────────────────────────

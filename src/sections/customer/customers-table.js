@@ -1,129 +1,108 @@
 import PropTypes from 'prop-types';
-import { format } from 'date-fns';
 import {
-  Avatar,
   Box,
   Card,
-  Checkbox,
-  Stack,
+  IconButton,
+  SvgIcon,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TablePagination,
   TableRow,
-  Typography
+  Tooltip,
+  Typography,
 } from '@mui/material';
+import EyeIcon from '@heroicons/react/24/solid/EyeIcon';
+import PencilIcon from '@heroicons/react/24/solid/PencilIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 import { Scrollbar } from 'src/components/scrollbar';
-import { getInitials } from 'src/utils/get-initials';
+import { formatCurrency } from 'src/utils/format-currency';
 
 export const CustomersTable = (props) => {
   const {
     count = 0,
     items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
+    onPageChange = () => { },
     onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
     page = 0,
     rowsPerPage = 0,
-    selected = []
+    onViewDetail,
+    onEdit,
+    onDelete,
+    canEdit = false,
   } = props;
-
-  const selectedSome = (selected.length > 0) && (selected.length < items.length);
-  const selectedAll = (items.length > 0) && (selected.length === items.length);
 
   return (
     <Card>
       <Scrollbar>
-        <Box sx={{ minWidth: 800 }}>
+        <Box sx={{ minWidth: 900 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  Name
-                </TableCell>
-                <TableCell>
-                  Email
-                </TableCell>
-                <TableCell>
-                  Location
-                </TableCell>
-                <TableCell>
-                  Phone
-                </TableCell>
-                <TableCell>
-                  Signed Up
-                </TableCell>
+                <TableCell>Nombre</TableCell>
+                <TableCell>Teléfono</TableCell>
+                <TableCell>Correo</TableCell>
+                <TableCell align="right">Viajes</TableCell>
+                <TableCell align="right">Ingresos</TableCell>
+                <TableCell align="right">Utilidad</TableCell>
+                <TableCell align="right">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((customer) => {
-                const isSelected = selected.includes(customer.id);
-                const createdAt = format(customer.createdAt, 'dd/MM/yyyy');
-
-                return (
-                  <TableRow
-                    hover
-                    key={customer.id}
-                    selected={isSelected}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(customer.id);
-                          } else {
-                            onDeselectOne?.(customer.id);
-                          }
-                        }}
-                      />
-                    </TableCell>
+              {items.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7}
+                    align="center"
+                    sx={{ py: 3 }}>
+                    <Typography variant="subtitle1"
+                      color="text.secondary">
+                      No hay clientes registrados.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map((customer) => (
+                  <TableRow hover
+                    key={customer.id}>
                     <TableCell>
-                      <Stack
-                        alignItems="center"
-                        direction="row"
-                        spacing={2}
-                      >
-                        <Avatar src={customer.avatar}>
-                          {getInitials(customer.name)}
-                        </Avatar>
-                        <Typography variant="subtitle2">
-                          {customer.name}
-                        </Typography>
-                      </Stack>
+                      <Typography variant="subtitle2">{customer.name}</Typography>
                     </TableCell>
-                    <TableCell>
-                      {customer.email}
+                    <TableCell>{customer.phone}</TableCell>
+                    <TableCell>{customer.email || '—'}</TableCell>
+                    <TableCell align="right">{customer.stats.tripCount}</TableCell>
+                    <TableCell align="right">{formatCurrency(customer.stats.revenue)}</TableCell>
+                    <TableCell align="right">
+                      <Typography variant="body2"
+                        color={customer.stats.profit < 0 ? 'error.main' : 'success.main'}>
+                        {formatCurrency(customer.stats.profit)}
+                      </Typography>
                     </TableCell>
-                    <TableCell>
-                      {customer.address.city}, {customer.address.state}, {customer.address.country}
-                    </TableCell>
-                    <TableCell>
-                      {customer.phone}
-                    </TableCell>
-                    <TableCell>
-                      {createdAt}
+                    <TableCell align="right">
+                      <Tooltip title="Ver detalle">
+                        <IconButton onClick={() => onViewDetail(customer)}>
+                          <SvgIcon fontSize="small"><EyeIcon /></SvgIcon>
+                        </IconButton>
+                      </Tooltip>
+                      {canEdit && (
+                        <>
+                          <Tooltip title="Editar">
+                            <IconButton onClick={() => onEdit(customer)}>
+                              <SvgIcon fontSize="small"><PencilIcon /></SvgIcon>
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Eliminar">
+                            <IconButton color="error"
+                              onClick={() => onDelete(customer)}>
+                              <SvgIcon fontSize="small"><TrashIcon /></SvgIcon>
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
                     </TableCell>
                   </TableRow>
-                );
-              })}
+                ))
+              )}
             </TableBody>
           </Table>
         </Box>
@@ -136,6 +115,7 @@ export const CustomersTable = (props) => {
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
+        labelRowsPerPage="Filas por página"
       />
     </Card>
   );
@@ -144,13 +124,12 @@ export const CustomersTable = (props) => {
 CustomersTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
-  onDeselectAll: PropTypes.func,
-  onDeselectOne: PropTypes.func,
   onPageChange: PropTypes.func,
   onRowsPerPageChange: PropTypes.func,
-  onSelectAll: PropTypes.func,
-  onSelectOne: PropTypes.func,
   page: PropTypes.number,
   rowsPerPage: PropTypes.number,
-  selected: PropTypes.array
+  onViewDetail: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  canEdit: PropTypes.bool,
 };

@@ -1,5 +1,6 @@
 import {
-  Drawer, Box, Typography, Stack, IconButton, Divider, Grid, Chip, Button, CircularProgress
+  Drawer, Box, Typography, Stack, IconButton, Divider, Grid, Chip, Button, CircularProgress,
+  Autocomplete, TextField
 } from '@mui/material';
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
 import { format } from 'date-fns';
@@ -16,11 +17,14 @@ const statusMap = {
   cancelado: { color: 'error', label: 'Cancelado' }
 };
 
-export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
+export const TripDetailDrawer = ({ open, onClose, trip, onSuccess, onCustomerChange, customers = [] }) => {
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [tripDetail, setTripDetail] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(false);
+  const [customerDraft, setCustomerDraft] = useState(null);
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   useEffect(() => {
     if (open && trip?.id) {
@@ -60,6 +64,25 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
   const handleTripClosed = () => {
     setCloseModalOpen(false);
     onSuccess();
+  };
+
+  const handleEditCustomer = () => {
+    setCustomerDraft(customers.find(c => c.id === data.customerId) || null);
+    setEditingCustomer(true);
+  };
+
+  const handleSaveCustomer = async () => {
+    setSavingCustomer(true);
+    try {
+      const updated = await tripsApi.assignCustomer(data.id, customerDraft?.id || null);
+      setTripDetail(updated);
+      setEditingCustomer(false);
+      onCustomerChange?.();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingCustomer(false);
+    }
   };
 
   return (
@@ -148,6 +171,64 @@ export const TripDetailDrawer = ({ open, onClose, trip, onSuccess }) => {
                   color="text.secondary">Operador</Typography>
                 <Typography>{data.operator?.name || 'No asignado'}</Typography>
               </Grid>
+              <Grid item
+                xs={12}
+                sm={6}>
+                <Typography variant="subtitle2"
+                  color="text.secondary">Cliente</Typography>
+                {editingCustomer ? (
+                  <Stack direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ mt: 0.5 }}>
+                    <Autocomplete
+                      size="small"
+                      sx={{ flexGrow: 1 }}
+                      options={customers}
+                      getOptionLabel={(option) => option.name || ''}
+                      value={customerDraft}
+                      onChange={(_, newValue) => setCustomerDraft(newValue)}
+                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      renderInput={(params) => (
+                        <TextField {...params}
+                          placeholder="Sin cliente" />
+                      )}
+                    />
+                    <Button size="small"
+                      variant="contained"
+                      onClick={handleSaveCustomer}
+                      disabled={savingCustomer}>
+                      Guardar
+                    </Button>
+                    <Button size="small"
+                      onClick={() => setEditingCustomer(false)}
+                      disabled={savingCustomer}>
+                      Cancelar
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Stack direction="row"
+                    spacing={1}
+                    alignItems="center">
+                    <Typography>{data.customer?.name || 'Sin cliente'}</Typography>
+                    {customers.length > 0 && (
+                      <Button size="small"
+                        onClick={handleEditCustomer}>
+                        {data.customer ? 'Cambiar' : 'Asignar'}
+                      </Button>
+                    )}
+                  </Stack>
+                )}
+              </Grid>
+              {data.entryCost > 0 && (
+                <Grid item
+                  xs={12}
+                  sm={6}>
+                  <Typography variant="subtitle2"
+                    color="text.secondary">Ingreso</Typography>
+                  <Typography>${data.entryCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</Typography>
+                </Grid>
+              )}
             </Grid>
 
             <Divider sx={{ my: 3, borderBottomWidth: 2 }} />

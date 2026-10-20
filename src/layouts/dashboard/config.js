@@ -235,7 +235,6 @@ export const items = [
   },
   {
     title: 'Clientes',
-    comingSoon: true,
     allowedRoles: ['admin'],
     moduleId: 'clientes',
     icon: (
@@ -243,6 +242,26 @@ export const items = [
         <UserGroupIcon />
       </SvgIcon>
     ),
+    children: [
+      {
+        title: 'Directorio',
+        path: '/customers',
+        icon: (
+          <SvgIcon fontSize="small">
+            <UsersIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: 'Reportes',
+        path: '/customers/reports',
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentChartBarIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
   {
     title: 'Finanzas',

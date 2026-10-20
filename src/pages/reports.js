@@ -34,27 +34,12 @@ import { subDays, startOfDay, endOfDay, format, isWithinInterval } from 'date-fn
 import { Layout as DashboardLayout } from 'src/layouts/dashboard/layout';
 import { SubscriptionGuard } from 'src/guards/subscription-guard';
 import { inventoryApi } from 'src/services/apiService';
+import { exportToCsv } from 'src/utils/export-csv';
 
 // ApexCharts must be loaded client-side only (no SSR)
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-const exportToCsv = (filename, headers, rows) => {
-  const lines = [
-    headers.join(','),
-    ...rows.map((row) =>
-      row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')
-    ),
-  ];
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-};
 
 const SummaryCard = ({ label, value, color = 'text.primary', sub }) => (
   <Card sx={{ height: '100%' }}>
